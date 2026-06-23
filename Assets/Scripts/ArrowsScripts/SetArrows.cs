@@ -1,66 +1,107 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Collections; // Only for debugging
 
 public class SetArrows : MonoBehaviour
 {
-	[SerializeField] private GameObject prefabToSpawn;
+    [SerializeField] private GameObject prefabToSpawn;
     [SerializeField] private Image targetImage;
 	
-	void Update()
-	{
-		SetCount();
-	}
+	private HashSet<Vector3> occupiedPositions = new HashSet<Vector3>();
+    private const float GRID_SIZE = 30f;
+	private Transform parentTransform;
 	
-	private void PlaceArrow(float leftRight, float upDown)
+	private int numberOfBlocks;
+	
+    void Start()
     {
-        Transform parentTransform = targetImage.transform;
-        int childCount = parentTransform.childCount;
-		
-        if (childCount > 0)
-        {    
-            Transform lastChild = parentTransform.GetChild(childCount - 1);
-			
-            float x = lastChild.localPosition.x + leftRight;
-            float y = lastChild.localPosition.y + upDown;
-            Vector3 targetLocalPosition = new Vector3(x, y, 0);
-			
-            GameObject spawnedObject = Instantiate(prefabToSpawn, parentTransform);
-            
-            spawnedObject.transform.localPosition = targetLocalPosition;
-        }
+		parentTransform = targetImage.transform;
+		Generate();
     }
 	
-	private void SetCount()
+	private void PlaceBlocks(Vector3 direction)
+    {
+        int childCount = parentTransform.childCount;
+		
+		if (childCount == 0) return;
+				
+		Transform lastChild = parentTransform.GetChild(childCount - 1);
+	
+		Vector3[] directions =
+        {
+            direction,
+            Vector3.up * GRID_SIZE,
+            Vector3.right * GRID_SIZE,
+            Vector3.down * GRID_SIZE,
+            Vector3.left * GRID_SIZE
+        };
+		
+		foreach (Vector3 dir in directions)
+        {
+            Vector3 targetPosition = lastChild.localPosition + dir;
+
+            if (occupiedPositions.Contains(targetPosition))
+                continue;
+
+            GameObject spawnedObject = Instantiate(prefabToSpawn, parentTransform);
+			spawnedObject.transform.localPosition = targetPosition;
+		
+			occupiedPositions.Add(targetPosition);
+			
+            return;
+        }
+    }
+    
+    private void SetRandomBlocks()
+    {
+        Vector3[] directions =
+        {
+            Vector3.up * GRID_SIZE,
+            Vector3.down * GRID_SIZE,
+            Vector3.left * GRID_SIZE,
+            Vector3.right * GRID_SIZE
+        };
+		
+        Vector3 randomDirection = directions[Random.Range(0, directions.Length)];      
+		
+        int blocksCount = Random.Range(1, 21);
+		
+		for(int i = 0; i < blocksCount; i++)
+		{
+			PlaceBlocks(randomDirection);
+		}
+		
+		numberOfBlocks += blocksCount; // Later will be deleted
+    }
+	
+	public void Generate()
 	{
-		List<string> direction = new List <string> {"up", "down", "left", "right"};
-		int randomIndex = Random.Range(0, direction.Count);
+		occupiedPositions.Clear();
 		
-		int randomBlocksCount = Random.Range(0, 21);
-		string randomDirection = direction[randomIndex];
+		numberOfBlocks = 0; // Will be deleted later
 		
-		float randomUpDown = 0f;
-		float randomRightLeft = 0f;
-		
-		switch(randomDirection)
+		if (targetImage.transform.childCount > 0)
 		{
-			case "up":
-				randomUpDown = 30f;
-				break;
-			case "down":
-				randomUpDown = -30f;
-				break;
-			case "right":
-				randomRightLeft = 30f;
-				break;
-			case "left":
-				randomRightLeft = -30f;
-				break;
+			occupiedPositions.Add(parentTransform.GetChild(0).localPosition);
 		}
 		
-		for (int i = 0; i < randomBlocksCount; i++)
+		int randomGen = 3; //This will be used later: Random.Range(1, 6);
+		
+		for(int i = 0; i < randomGen; i++)
 		{
-			PlaceArrow(randomRightLeft, randomUpDown);
+			SetRandomBlocks();
 		}
+		
+		// Only for debugging
+		Debug.Log("All generated blocks: " + numberOfBlocks);
+		StartCoroutine(DebugChildCount());
+	}
+	
+	// Only for debugging
+	IEnumerator DebugChildCount()
+	{
+		yield return new WaitForSeconds(3f);
+		Debug.Log("Blocks in use: " + parentTransform.childCount);
 	}
 }
