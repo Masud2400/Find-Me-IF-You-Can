@@ -1,18 +1,15 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using System.Collections; // Only for debugging
 
 public class SetArrows : MonoBehaviour
 {
+	[Header("Game Objects")]
     [SerializeField] private GameObject prefabToSpawn;
     [SerializeField] private Image targetImage;
 	
-	private HashSet<Vector3> occupiedPositions = new HashSet<Vector3>();
     private const float GRID_SIZE = 30f;
 	private Transform parentTransform;
-	
-	private int numberOfBlocks;
 	
     void Start()
     {
@@ -39,15 +36,19 @@ public class SetArrows : MonoBehaviour
 		
 		foreach (Vector3 dir in directions)
         {
-            Vector3 targetPosition = lastChild.localPosition + dir;
+            Vector3Int targetPosition = Vector3Int.RoundToInt(lastChild.localPosition + dir);
 
-            if (occupiedPositions.Contains(targetPosition))
-                continue;
+            //if (occupiedPositions.Contains(targetPosition))
+            //    continue;
+			
+			RectTransform parentRect = parentTransform.GetComponent<RectTransform>();
+			if (!parentRect.rect.Contains(new Vector2(targetPosition.x, targetPosition.y)))
+				continue;
 
             GameObject spawnedObject = Instantiate(prefabToSpawn, parentTransform);
 			spawnedObject.transform.localPosition = targetPosition;
 		
-			occupiedPositions.Add(targetPosition);
+			//occupiedPositions.Add(targetPosition);
 			
             return;
         }
@@ -71,37 +72,15 @@ public class SetArrows : MonoBehaviour
 		{
 			PlaceBlocks(randomDirection);
 		}
-		
-		numberOfBlocks += blocksCount; // Later will be deleted
     }
 	
 	public void Generate()
-	{
-		occupiedPositions.Clear();
-		
-		numberOfBlocks = 0; // Will be deleted later
-		
-		if (targetImage.transform.childCount > 0)
-		{
-			occupiedPositions.Add(parentTransform.GetChild(0).localPosition);
-		}
-		
-		int randomGen = 3; //This will be used later: Random.Range(1, 6);
+	{	
+		int randomGen = Random.Range(1, 6);
 		
 		for(int i = 0; i < randomGen; i++)
 		{
 			SetRandomBlocks();
 		}
-		
-		// Only for debugging
-		Debug.Log("All generated blocks: " + numberOfBlocks);
-		StartCoroutine(DebugChildCount());
-	}
-	
-	// Only for debugging
-	IEnumerator DebugChildCount()
-	{
-		yield return new WaitForSeconds(3f);
-		Debug.Log("Blocks in use: " + parentTransform.childCount);
 	}
 }

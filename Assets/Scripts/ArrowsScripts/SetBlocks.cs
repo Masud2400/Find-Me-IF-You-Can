@@ -1,39 +1,51 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class SetBlocks : MonoBehaviour
 {
+	[Header("Game Objects")]
 	[SerializeField] private GameObject prefabToSpawn; 
     [SerializeField] private Image targetImage;       
     [SerializeField] private Transform spawnParent;
 	
-	private bool randomPos = false;
+	private Vector3Int localRandomPosition;
+	private RectTransform imageRectTransform;
 
 	void Awake()
 	{
-		SpawnPrefabAtRandomLocation();
+		imageRectTransform = targetImage.rectTransform;
+		
+		//PlaceRandomBlock();
 	}
 
-    public void SpawnPrefabAtRandomLocation()
+    private void SetRandomLocation()
     {	
-		// Deletes old blocks before regeneration
-		for (int i = spawnParent.childCount - 1; i >= 0; i--)
-        {
-            GameObject child = spawnParent.GetChild(i).gameObject;
-            Destroy(child);
-        }
-	
-        RectTransform imageRectTransform = targetImage.rectTransform;
         Rect rect = imageRectTransform.rect;
 
         float randomX = Random.Range(rect.xMin, rect.xMax);
         float randomY = Random.Range(rect.yMin, rect.yMax);
 		
-        Vector3 localRandomPosition = new Vector3(randomX, randomY, 0f);
-		Vector3 notRandomPos = new Vector3(0f, 0f, 0f);
-
-        Vector3 worldPosition = imageRectTransform.TransformPoint(randomPos ? localRandomPosition : notRandomPos);
-
-        GameObject spawnedObject = Instantiate(prefabToSpawn, worldPosition, Quaternion.identity, spawnParent);
+        localRandomPosition = Vector3Int.RoundToInt(new Vector3(randomX, randomY, 0f));
     }
+	
+	private void SpawnBlock()
+	{
+		//occupiedPositions.Add(localRandomPosition);
+
+        Vector3 worldPosition = imageRectTransform.TransformPoint(localRandomPosition);
+        GameObject spawnedObject = Instantiate(prefabToSpawn, worldPosition, Quaternion.identity, spawnParent);
+	}
+	
+	public void PlaceRandomBlock()
+	{
+		SetRandomLocation();
+		/*
+		if(occupiedPositions.Contains(localRandomPosition))
+		{
+			Debug.Log("You can't put random block here");
+			return;
+		}*/
+		SpawnBlock();
+	}
 }

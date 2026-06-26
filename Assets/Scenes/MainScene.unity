@@ -2413,6 +2413,7 @@ GameObject:
   - component: {fileID: 407797116}
   - component: {fileID: 407797118}
   - component: {fileID: 407797117}
+  - component: {fileID: 407797119}
   m_Layer: 5
   m_Name: ArrowsGame
   m_TagString: Untagged
@@ -2448,7 +2449,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 407797115}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b834946d0782820489fc49ff07195be3, type: 3}
   m_Name: 
@@ -2462,7 +2463,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 407797115}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5e93326a6c3ad724cad47c379e548fdd, type: 3}
   m_Name: 
@@ -2470,6 +2471,20 @@ MonoBehaviour:
   prefabToSpawn: {fileID: 2348353045105963302, guid: 4e4a5a8a38c6a42449b0e6a5bd37fb6b, type: 3}
   targetImage: {fileID: 1172805549}
   spawnParent: {fileID: 1172805548}
+--- !u!114 &407797119
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 407797115}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5358682bd6f85d849a89ae4201ad922c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetImage: {fileID: 1172805548}
+  prefabToSpawn: {fileID: 2348353045105963302, guid: 4e4a5a8a38c6a42449b0e6a5bd37fb6b, type: 3}
 --- !u!1 &408375658
 GameObject:
   m_ObjectHideFlags: 0
@@ -7481,7 +7496,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 407797118}
         m_TargetAssemblyTypeName: SetBlocks, Assembly-CSharp
-        m_MethodName: SpawnPrefabAtRandomLocation
+        m_MethodName: PlaceRandomBlock
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
