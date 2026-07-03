@@ -2411,9 +2411,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 407797116}
+  - component: {fileID: 407797120}
+  - component: {fileID: 407797119}
   - component: {fileID: 407797118}
   - component: {fileID: 407797117}
-  - component: {fileID: 407797119}
   m_Layer: 5
   m_Name: ArrowsGame
   m_TagString: Untagged
@@ -2449,13 +2450,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 407797115}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b834946d0782820489fc49ff07195be3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   prefabToSpawn: {fileID: 2348353045105963302, guid: 4e4a5a8a38c6a42449b0e6a5bd37fb6b, type: 3}
-  targetImage: {fileID: 1172805549}
+  spawnParent: {fileID: 1172805548}
 --- !u!114 &407797118
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2463,14 +2464,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 407797115}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5e93326a6c3ad724cad47c379e548fdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   prefabToSpawn: {fileID: 2348353045105963302, guid: 4e4a5a8a38c6a42449b0e6a5bd37fb6b, type: 3}
-  targetImage: {fileID: 1172805549}
   spawnParent: {fileID: 1172805548}
+  arrowParent: {fileID: 4696511974430070053, guid: 1c337318dfbdaf54a9db7611deffb572, type: 3}
 --- !u!114 &407797119
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2485,6 +2486,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetImage: {fileID: 1172805548}
   prefabToSpawn: {fileID: 2348353045105963302, guid: 4e4a5a8a38c6a42449b0e6a5bd37fb6b, type: 3}
+--- !u!114 &407797120
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 407797115}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d9efeded9ce9894cbf27ad3db652cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridGen: {fileID: 407797119}
+  setBlocks: {fileID: 407797118}
+  setArrows: {fileID: 407797117}
 --- !u!1 &408375658
 GameObject:
   m_ObjectHideFlags: 0
@@ -7496,7 +7512,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 407797118}
         m_TargetAssemblyTypeName: SetBlocks, Assembly-CSharp
-        m_MethodName: PlaceRandomBlock
+        m_MethodName: SpawnBlock
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -7508,7 +7524,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 407797117}
         m_TargetAssemblyTypeName: SetArrows, Assembly-CSharp
-        m_MethodName: Generate
+        m_MethodName: setArrowLength
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

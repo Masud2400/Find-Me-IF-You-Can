@@ -6,15 +6,15 @@ public class GridGen : MonoBehaviour
     [SerializeField] private RectTransform targetImage;
 	[SerializeField] private GameObject prefabToSpawn;
 	
-	private Dictionary<int, Dictionary<int, Vector3>> locations = new Dictionary<int, Dictionary<int, Vector3>>();
+	private Dictionary<int, Dictionary<int, Vector3>> locations;
 	private const float GRID_SIZE = 30f;
 	
 	void Start()
 	{
-		GenerateGrid();
+		locations = GridManager.Instance.locations;
 	}
 	
-	private void GenerateGrid()
+	public void GenerateGrid()
 	{
 		float width = targetImage.rect.width;
 		float height = targetImage.rect.height;
@@ -41,9 +41,6 @@ public class GridGen : MonoBehaviour
 				Vector3 spawnPosition = new Vector3(currentX, currentY, 0);
 				
 				locations[i][k] = spawnPosition;
-				
-				GameObject spawnedObj = Instantiate(prefabToSpawn, targetImage);
-				spawnedObj.transform.localPosition = spawnPosition;
 			}
 		}
 	}

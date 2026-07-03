@@ -1,51 +1,59 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 using System.Collections.Generic;
 
 public class SetBlocks : MonoBehaviour
 {
 	[Header("Game Objects")]
-	[SerializeField] private GameObject prefabToSpawn; 
-    [SerializeField] private Image targetImage;       
+	[SerializeField] private GameObject prefabToSpawn;        
     [SerializeField] private Transform spawnParent;
+	[SerializeField] private Transform arrowParent;
 	
-	private Vector3Int localRandomPosition;
-	private RectTransform imageRectTransform;
-
-	void Awake()
+	private Dictionary<int, Dictionary<int, Vector3>> locations;
+	private HashSet<Vector3> occupiedPositions;
+	private Vector3 randomVector;
+	
+	private int counter = 0;
+	
+	void Start()
 	{
-		imageRectTransform = targetImage.rectTransform;
-		
-		//PlaceRandomBlock();
+		locations = GridManager.Instance.locations;
+		occupiedPositions = GridManager.Instance.occupiedPositions;
 	}
 
     private void SetRandomLocation()
     {	
-        Rect rect = imageRectTransform.rect;
-
-        float randomX = Random.Range(rect.xMin, rect.xMax);
-        float randomY = Random.Range(rect.yMin, rect.yMax);
+		var allVectors = locations.Values.SelectMany(innerDict => innerDict.Values).ToList();
 		
-        localRandomPosition = Vector3Int.RoundToInt(new Vector3(randomX, randomY, 0f));
+		var availableVectors = allVectors
+			.Where(v => !occupiedPositions.Contains(v))
+			.ToList();
+
+		if (availableVectors.Count == 0)
+		{
+			return; 
+		}
+
+		randomVector = availableVectors[Random.Range(0, availableVectors.Count)];
+		occupiedPositions.Add(randomVector);
     }
 	
-	private void SpawnBlock()
+	private void SpawnParent(out Transform spawnedParent)
 	{
-		//occupiedPositions.Add(localRandomPosition);
-
-        Vector3 worldPosition = imageRectTransform.TransformPoint(localRandomPosition);
-        GameObject spawnedObject = Instantiate(prefabToSpawn, worldPosition, Quaternion.identity, spawnParent);
+		counter += 1;
+		
+		spawnedParent = Instantiate(arrowParent, spawnParent);
+		spawnedParent.name = "Arrow" + counter;
 	}
 	
-	public void PlaceRandomBlock()
+	public void SpawnBlock()
 	{
 		SetRandomLocation();
-		/*
-		if(occupiedPositions.Contains(localRandomPosition))
-		{
-			Debug.Log("You can't put random block here");
-			return;
-		}*/
-		SpawnBlock();
+		
+		SpawnParent(out Transform spawnedParent);
+		
+        GameObject spawnedObj = Instantiate(prefabToSpawn, spawnedParent);
+		spawnedObj.transform.localPosition = randomVector;
 	}
 }
