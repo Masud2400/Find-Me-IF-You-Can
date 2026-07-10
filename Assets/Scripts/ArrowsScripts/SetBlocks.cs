@@ -10,6 +10,9 @@ public class SetBlocks : MonoBehaviour
     [SerializeField] private Transform spawnParent;
 	[SerializeField] private Transform arrowParent;
 	
+	[Header("Sprite")]
+	[SerializeField] private Sprite arrowHead;
+	
 	private Dictionary<int, Dictionary<int, Vector3>> locations;
 	private HashSet<Vector3> occupiedPositions;
 	private Vector3 randomVector;
@@ -55,5 +58,23 @@ public class SetBlocks : MonoBehaviour
 		
         GameObject spawnedObj = Instantiate(prefabToSpawn, spawnedParent);
 		spawnedObj.transform.localPosition = randomVector;
+		
+		Image spriteRenderer = spawnedObj.GetComponent<Image>();
+		
+		if(arrowHead != null)
+		{
+			spriteRenderer.sprite = arrowHead;
+		}
+		
+		/*
+		MoveArrow movementScript = spawnedObj.GetComponent<MoveArrow>();
+    
+		Button btn = spawnedObj.GetComponent<Button>();
+
+		if (btn != null && movementScript != null)
+		{
+			btn.onClick.RemoveAllListeners();
+			btn.onClick.AddListener(movementScript.MoveBlocks);
+		}*/
 	}
 }

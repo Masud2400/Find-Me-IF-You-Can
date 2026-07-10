@@ -11,13 +11,17 @@ public class SetArrows : MonoBehaviour
 
     private Dictionary<int, Dictionary<int, Vector3>> locations;
     private HashSet<Vector3> occupiedPositions;
+	private Dictionary<Vector3, List<int>> firstArrowBlock;
 	
 	private int counter = 0;
+	private Vector3 firstBlockPos;
+	private int _directionIndex = 0;
 
     void Start()
     {
         locations = GridManager.Instance.locations;
         occupiedPositions = GridManager.Instance.occupiedPositions;
+		firstArrowBlock = GridManager.Instance.firstArrowBlock;
     }
 
     private void PlaceArrows()
@@ -27,39 +31,34 @@ public class SetArrows : MonoBehaviour
 
         Transform lastChild = arrowContainer.GetChild(arrowContainer.childCount - 1);
 
-        Vector3 randomDirection = GetRandomDirection();
         int blockCount = Random.Range(0, 20);
 
         GetGridPosition(lastChild.localPosition, out int currentColumn, out int currentRow);
-        GetDirectionStep(randomDirection, out int colStep, out int rowStep);
+		
+		GetFirstDirection(out int colStep, out int rowStep);
 
         for (int i = 0; i < blockCount; i++)
         {
-            if (!TryGetNextPosition(
-                    ref currentColumn,
-                    ref currentRow,
-                    colStep,
-                    rowStep,
-                    out Vector3 targetPosition))
-                return;
-
+			//Debug.Log("ColStep: " + colStep);
+			//Debug.Log("RowStep: " + rowStep);
+			
+			Vector3 targetPosition = ReturnTargetLocation(
+				ref currentColumn, 
+				ref currentRow,
+				ref colStep,
+				ref rowStep,
+				out int targetColStep,
+				out int targetRowStep);
+			
+			if(targetPosition == Vector3.zero)
+			{
+				return;
+			}
+			
             SpawnBlock(targetPosition);
 			
-			RotateBlock(colStep, rowStep);
+			RotateBlock(targetColStep, targetRowStep);
         }
-    }
-
-    private Vector3 GetRandomDirection()
-    {
-        Vector3[] directions =
-        {
-            Vector3.up,
-            Vector3.down,
-            Vector3.left,
-            Vector3.right
-        };
-
-        return directions[Random.Range(0, directions.Length)];
     }
 
     private void GetGridPosition(Vector3 position, out int column, out int row)
@@ -70,21 +69,6 @@ public class SetArrows : MonoBehaviour
         row = matchedPair.Value.FirstOrDefault(inner => inner.Value == position).Key;
     }
 
-    private void GetDirectionStep(Vector3 direction, out int colStep, out int rowStep)
-    {
-        colStep = 0;
-        rowStep = 0;
-
-        if (direction == Vector3.up)
-            colStep = 1;
-        else if (direction == Vector3.down)
-            colStep = -1;
-        else if (direction == Vector3.left)
-            rowStep = -1;
-        else if (direction == Vector3.right)
-            rowStep = 1;
-    }
-
     private bool IsValidAndEmpty(int col, int row)
     {
         if (!locations.ContainsKey(col))
@@ -92,48 +76,104 @@ public class SetArrows : MonoBehaviour
 
         if (!locations[col].ContainsKey(row))
             return false;
+		
+		if (firstArrowBlock.TryGetValue(firstBlockPos, out List<int> values) && values.Count >= 3)
+		{
+			int firstBlockCol = values[0];
+			int firstBlockRow = values[1];
+			int angle = values[2];
+			
+			if ((firstBlockCol == col && ((firstBlockRow < row && angle == 270) || (firstBlockRow > row && angle == 90))) ||
+				(firstBlockRow == row && ((firstBlockCol < col && angle == 0)   || (firstBlockCol > col && angle == 180)))) {
+				return false;
+			}
+		}
 
         return !occupiedPositions.Contains(locations[col][row]);
     }
+	
+	private void GetFirstDirection(out int colStep, out int rowStep)
+	{
+		int[] dCol = { 0,  0, -1, 1 };
+		int[] dRow = { 1, -1,  0, 0 };
+		
+		int randomIndex = Random.Range(0, 4);
 
-    private bool TryGetNextPosition(
-        ref int currentColumn,
-        ref int currentRow,
-        int colStep,
-        int rowStep,
-        out Vector3 targetPosition)
+		colStep = dCol[randomIndex];
+		rowStep = dRow[randomIndex];
+	}
+
+    private void TryGetNextDirection(out int neighborCol, out int neighborRow)
     {
-        int nextColumn = currentColumn + colStep;
-        int nextRow = currentRow + rowStep;
-
-        if (IsValidAndEmpty(nextColumn, nextRow))
-        {
-            currentColumn = nextColumn;
-            currentRow = nextRow;
-            targetPosition = locations[currentColumn][currentRow];
-            return true;
-        }
-
         int[] dCol = { 0, 0, -1, 1 };
-        int[] dRow = { 1, -1, 0, 0 };
+		int[] dRow = { 1, -1, 0, 0 };
 
-        for (int i = 0; i < 4; i++)
-        {
-            int neighborCol = currentColumn + dCol[i];
-            int neighborRow = currentRow + dRow[i];
+		if (_directionIndex >= dCol.Length)
+		{
+			_directionIndex = 0;
+		}
 
-            if (IsValidAndEmpty(neighborCol, neighborRow))
-            {
-                currentColumn = neighborCol;
-                currentRow = neighborRow;
-                targetPosition = locations[currentColumn][currentRow];
-                return true;
-            }
-        }
-
-        targetPosition = Vector3.zero;
-        return false;
+		neighborCol = dCol[_directionIndex];
+		neighborRow = dRow[_directionIndex];
+		
+		_directionIndex++;
     }
+	
+	private Vector3 ReturnTargetLocation(
+		ref int currentColumn, 
+		ref int currentRow,
+		ref int colStep,
+		ref int rowStep,
+		out int targetColStep,
+		out int targetRowStep)
+	{
+		int nextColumn = currentColumn + colStep;
+        int nextRow = currentRow + rowStep;
+		
+		targetColStep = 0;
+		targetRowStep = 0;
+		
+		Vector3 targetPosition = Vector3.zero;
+		
+		if(IsValidAndEmpty(nextColumn, nextRow))
+		{	
+			currentColumn = nextColumn;
+			currentRow = nextRow;
+			
+			targetPosition = locations[nextColumn][nextRow];
+			
+			targetColStep = colStep;
+			targetRowStep = rowStep;
+			
+			return targetPosition;
+		}
+		
+		for (int i = 0; i < 4; i++)
+        {
+			TryGetNextDirection(out int neighborCol, out int neighborRow);
+			
+            nextColumn = currentColumn + neighborCol;
+            nextRow = currentRow + neighborRow;
+			
+			if (IsValidAndEmpty(nextColumn, nextRow))
+            {	
+				currentColumn = nextColumn;
+				currentRow = nextRow;
+				
+                targetPosition = locations[nextColumn][nextRow];
+				
+				targetColStep = neighborCol;
+				targetRowStep = neighborRow;
+				
+				colStep = neighborCol;
+				rowStep = neighborRow;
+				
+				return targetPosition;
+			}
+		}
+		
+		return targetPosition;
+	}
 
     private void SpawnBlock(Vector3 position)
     {
@@ -155,17 +195,22 @@ public class SetArrows : MonoBehaviour
 		Transform lastChild = arrowContainer.GetChild(arrowContainer.childCount - 1);
 		Transform previousBlock = arrowContainer.GetChild(arrowContainer.childCount - 2);
 		
-		if(arrowContainer.childCount <= 2)
+		if(arrowContainer.childCount == 2)
 		{
-			if(colStep == 1 || colStep == -1)
+			int angle = 0;
+
+			if (colStep != 0)
 			{
-				previousBlock.localRotation = Quaternion.Euler(0, 0, 90);
+				angle = colStep == 1 ? 270 : 90; // colStep one is down and 270 is up
+			}
+			else if (rowStep != 0)
+			{
+				angle = rowStep == 1 ? 0 : 180; // rowStep one is right and 0 is left
 			}
 			
-			if(rowStep == 1 || rowStep == -1)
-			{
-				previousBlock.localRotation = Quaternion.Euler(0, 0, 0);
-			}
+			SaveFirstBlock(angle);
+			
+			previousBlock.localRotation = Quaternion.Euler(0, 0, angle);
 		}
 		
 		if(lastChild.localPosition.y != previousBlock.localPosition.y)
@@ -178,13 +223,26 @@ public class SetArrows : MonoBehaviour
 			lastChild.localRotation = Quaternion.Euler(0, 0, 0);
 		}
 	}
+	
+	private void SaveFirstBlock(int angle)
+	{
+		Transform firstBlock = arrowContainer.GetChild(0);
+		firstBlockPos = firstBlock.localPosition;
+		
+		GetGridPosition(firstBlockPos, out int currentColumn, out int currentRow);
+		
+		firstArrowBlock[firstBlockPos] = new List<int>();		
+		firstArrowBlock[firstBlockPos].Add(currentColumn);
+		firstArrowBlock[firstBlockPos].Add(currentRow);
+		firstArrowBlock[firstBlockPos].Add(angle);
+	}
 
     public void setArrowLength()
     {
 		ReturnArrowContainer();
 		
         for (int i = 0; i <= 4; i++)
-        {
+        {	
             PlaceArrows();
         }
     }

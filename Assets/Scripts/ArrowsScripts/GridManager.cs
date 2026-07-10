@@ -10,6 +10,7 @@ public class GridManager : MonoBehaviour
 	public static GridManager Instance;
 	public Dictionary<int, Dictionary<int, Vector3>> locations = new Dictionary<int, Dictionary<int, Vector3>>();
 	public HashSet<Vector3> occupiedPositions = new();
+	public Dictionary<Vector3, List<int>> firstArrowBlock = new Dictionary<Vector3, List<int>>();
 	
 	void Awake()
 	{

@@ -2472,6 +2472,7 @@ MonoBehaviour:
   prefabToSpawn: {fileID: 2348353045105963302, guid: 4e4a5a8a38c6a42449b0e6a5bd37fb6b, type: 3}
   spawnParent: {fileID: 1172805548}
   arrowParent: {fileID: 4696511974430070053, guid: 1c337318dfbdaf54a9db7611deffb572, type: 3}
+  arrowHead: {fileID: 21300000, guid: dcb914d5052b43f46a0c73104f3485bc, type: 3}
 --- !u!114 &407797119
 MonoBehaviour:
   m_ObjectHideFlags: 0
