@@ -66,7 +66,6 @@ public class SetBlocks : MonoBehaviour
 			spriteRenderer.sprite = arrowHead;
 		}
 		
-		/*
 		MoveArrow movementScript = spawnedObj.GetComponent<MoveArrow>();
     
 		Button btn = spawnedObj.GetComponent<Button>();
@@ -75,6 +74,6 @@ public class SetBlocks : MonoBehaviour
 		{
 			btn.onClick.RemoveAllListeners();
 			btn.onClick.AddListener(movementScript.MoveBlocks);
-		}*/
+		}
 	}
 }

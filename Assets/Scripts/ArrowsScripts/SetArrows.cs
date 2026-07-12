@@ -33,22 +33,19 @@ public class SetArrows : MonoBehaviour
 
         int blockCount = Random.Range(0, 20);
 
-        GetGridPosition(lastChild.localPosition, out int currentColumn, out int currentRow);
+        GetGridPosition(lastChild.localPosition, out int currentRow, out int currentColumn);
 		
-		GetFirstDirection(out int colStep, out int rowStep);
+		GetFirstDirection(out int rowStep, out int colStep);
 
         for (int i = 0; i < blockCount; i++)
         {
-			//Debug.Log("ColStep: " + colStep);
-			//Debug.Log("RowStep: " + rowStep);
-			
 			Vector3 targetPosition = ReturnTargetLocation(
-				ref currentColumn, 
 				ref currentRow,
-				ref colStep,
+				ref currentColumn,
 				ref rowStep,
-				out int targetColStep,
-				out int targetRowStep);
+				ref colStep,
+				out int targetRowStep,
+				out int targetColStep);
 			
 			if(targetPosition == Vector3.zero)
 			{
@@ -57,116 +54,125 @@ public class SetArrows : MonoBehaviour
 			
             SpawnBlock(targetPosition);
 			
-			RotateBlock(targetColStep, targetRowStep);
+			RotateBlock(targetRowStep, targetColStep);
         }
     }
 
-    private void GetGridPosition(Vector3 position, out int column, out int row)
+    private void GetGridPosition(Vector3 position, out int row, out int column)
     {
         var matchedPair = locations.FirstOrDefault(dict => dict.Value.ContainsValue(position));
 
-        column = matchedPair.Key;
-        row = matchedPair.Value.FirstOrDefault(inner => inner.Value == position).Key;
+        row = matchedPair.Key;
+        column = matchedPair.Value.FirstOrDefault(inner => inner.Value == position).Key;
     }
 
-    private bool IsValidAndEmpty(int col, int row)
+    private bool IsValidAndEmpty(int row, int col)
     {
-        if (!locations.ContainsKey(col))
+        if (!locations.ContainsKey(row))
             return false;
 
-        if (!locations[col].ContainsKey(row))
+        if (!locations[row].ContainsKey(col))
             return false;
 		
 		if (firstArrowBlock.TryGetValue(firstBlockPos, out List<int> values) && values.Count >= 3)
 		{
-			int firstBlockCol = values[0];
-			int firstBlockRow = values[1];
+			int firstBlockRow = values[0];
+			int firstBlockCol = values[1];
 			int angle = values[2];
 			
-			if ((firstBlockCol == col && ((firstBlockRow < row && angle == 270) || (firstBlockRow > row && angle == 90))) ||
-				(firstBlockRow == row && ((firstBlockCol < col && angle == 0)   || (firstBlockCol > col && angle == 180)))) {
+			if ((firstBlockCol == col && ((firstBlockRow > row && angle == 270) || (firstBlockRow < row && angle == 90))) ||
+				(firstBlockRow == row && ((firstBlockCol < col && angle == 180) || (firstBlockCol > col && angle == 0)))) {
+				
+				/*
+				Debug.Log("FirstBlockCol: " + firstBlockCol);
+				Debug.Log("Col: " + col);
+				Debug.Log("FirstBlockRow: " + firstBlockRow);
+				Debug.Log("Row: " + row);
+				Debug.Log("Angle: " + angle);
+				*/
+				
 				return false;
 			}
 		}
 
-        return !occupiedPositions.Contains(locations[col][row]);
+        return !occupiedPositions.Contains(locations[row][col]);
     }
 	
-	private void GetFirstDirection(out int colStep, out int rowStep)
+	private void GetFirstDirection(out int rowStep, out int colStep)
 	{
-		int[] dCol = { 0,  0, -1, 1 };
-		int[] dRow = { 1, -1,  0, 0 };
+		int[] dRow = { 0,  0, -1, 1 };
+		int[] dCol = { 1, -1,  0, 0 };
 		
 		int randomIndex = Random.Range(0, 4);
 
-		colStep = dCol[randomIndex];
 		rowStep = dRow[randomIndex];
+		colStep = dCol[randomIndex];
 	}
 
-    private void TryGetNextDirection(out int neighborCol, out int neighborRow)
+    private void TryGetNextDirection(out int neighborRow, out int neighborCol)
     {
-        int[] dCol = { 0, 0, -1, 1 };
-		int[] dRow = { 1, -1, 0, 0 };
+        int[] dRow = { 0,  0, -1, 1 };
+		int[] dCol = { 1, -1,  0, 0 };
 
-		if (_directionIndex >= dCol.Length)
+		if (_directionIndex >= dRow.Length)
 		{
 			_directionIndex = 0;
 		}
 
-		neighborCol = dCol[_directionIndex];
 		neighborRow = dRow[_directionIndex];
+		neighborCol = dCol[_directionIndex];
 		
 		_directionIndex++;
     }
 	
 	private Vector3 ReturnTargetLocation(
-		ref int currentColumn, 
 		ref int currentRow,
+		ref int currentColumn,
+		ref int rowStep,		
 		ref int colStep,
-		ref int rowStep,
-		out int targetColStep,
-		out int targetRowStep)
+		out int targetRowStep,
+		out int targetColStep)
 	{
+		int nextRow = currentRow + rowStep;
 		int nextColumn = currentColumn + colStep;
-        int nextRow = currentRow + rowStep;
 		
-		targetColStep = 0;
 		targetRowStep = 0;
+		targetColStep = 0;
 		
 		Vector3 targetPosition = Vector3.zero;
 		
-		if(IsValidAndEmpty(nextColumn, nextRow))
+		if(IsValidAndEmpty(nextRow, nextColumn))
 		{	
-			currentColumn = nextColumn;
 			currentRow = nextRow;
+			currentColumn = nextColumn;
 			
-			targetPosition = locations[nextColumn][nextRow];
+			targetPosition = locations[nextRow][nextColumn];
 			
-			targetColStep = colStep;
 			targetRowStep = rowStep;
+			targetColStep = colStep;
 			
 			return targetPosition;
 		}
 		
 		for (int i = 0; i < 4; i++)
         {
-			TryGetNextDirection(out int neighborCol, out int neighborRow);
+			TryGetNextDirection(out int neighborRow, out int neighborCol);
 			
+			nextRow = currentRow + neighborRow;
             nextColumn = currentColumn + neighborCol;
-            nextRow = currentRow + neighborRow;
 			
-			if (IsValidAndEmpty(nextColumn, nextRow))
+			if (IsValidAndEmpty(nextRow, nextColumn))
             {	
-				currentColumn = nextColumn;
 				currentRow = nextRow;
+				currentColumn = nextColumn;
 				
-                targetPosition = locations[nextColumn][nextRow];
+                targetPosition = locations[nextRow][nextColumn];
 				
-				targetColStep = neighborCol;
 				targetRowStep = neighborRow;
+				targetColStep = neighborCol;
 				
-				colStep = neighborCol;
 				rowStep = neighborRow;
+				colStep = neighborCol;
 				
 				return targetPosition;
 			}
@@ -190,7 +196,7 @@ public class SetArrows : MonoBehaviour
 		counter += 1;
 	}
 	
-	private void RotateBlock(int colStep, int rowStep)
+	private void RotateBlock(int rowStep, int colStep)
 	{
 		Transform lastChild = arrowContainer.GetChild(arrowContainer.childCount - 1);
 		Transform previousBlock = arrowContainer.GetChild(arrowContainer.childCount - 2);
@@ -199,13 +205,13 @@ public class SetArrows : MonoBehaviour
 		{
 			int angle = 0;
 
-			if (colStep != 0)
+			if (rowStep != 0)
 			{
-				angle = colStep == 1 ? 270 : 90; // colStep one is down and 270 is up
+				angle = rowStep == 1 ? 270 : 90; // rowStep one is down and 270 is up
 			}
-			else if (rowStep != 0)
+			else if (colStep != 0)
 			{
-				angle = rowStep == 1 ? 0 : 180; // rowStep one is right and 0 is left
+				angle = colStep == 1 ? 0 : 180; // colStep one is right and 0 is left
 			}
 			
 			SaveFirstBlock(angle);
@@ -229,11 +235,11 @@ public class SetArrows : MonoBehaviour
 		Transform firstBlock = arrowContainer.GetChild(0);
 		firstBlockPos = firstBlock.localPosition;
 		
-		GetGridPosition(firstBlockPos, out int currentColumn, out int currentRow);
+		GetGridPosition(firstBlockPos, out int currentRow, out int currentColumn);
 		
 		firstArrowBlock[firstBlockPos] = new List<int>();		
-		firstArrowBlock[firstBlockPos].Add(currentColumn);
 		firstArrowBlock[firstBlockPos].Add(currentRow);
+		firstArrowBlock[firstBlockPos].Add(currentColumn);
 		firstArrowBlock[firstBlockPos].Add(angle);
 	}
 

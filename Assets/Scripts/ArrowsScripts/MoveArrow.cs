@@ -25,8 +25,11 @@ public class MoveArrow : MonoBehaviour
 	{
 		if(isMoving)
 		{
-			float step = movementSpeed * Time.deltaTime; 
-			transform.position = Vector3.MoveTowards(transform.position, targetPos, step);
+			float step = movementSpeed * Time.deltaTime;
+
+			if(targetPos == Vector3.zero) return;
+			
+			transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPos, step);
 			
 			if (Vector3.Distance(transform.localPosition, targetPos) < 0.001f)
             {
@@ -48,49 +51,51 @@ public class MoveArrow : MonoBehaviour
 		if (!firstArrowBlock.TryGetValue(currentPos, out List<int> values) || values.Count < 3)
 			return;
 
-		int col = values[0];
-		int row = values[1];
+		int row = values[0];
+		int col = values[1];
 		int angle = values[2];
 		
-		int finalRow = locations.Last().Value.Last().Key;
-		int finalCol = locations.Count - 1; 
+		int finalRow = locations.Count - 1;
+		int finalCol = locations.Last().Value.Last().Key; 
 
 		switch (angle)
 		{
 			case 270: // Up
-				targetPos = locations[0][row];
-				for (int i = col - 1; i > 0; i--)
+				for (int i = row - 1; i >= 0; i--)
 				{
-					if (occupiedPositions.Contains(locations[i][row])) return;
+					if (occupiedPositions.Contains(locations[i][col]))
+						return;
 				}
+				targetPos = locations[0][col];
+				Debug.Log(targetPos);
 				break;
 
 			case 90: // Down
-				targetPos = locations[finalCol][row];
-				for (int i = col + 1; i < locations.Count; i++)
+				for (int i = row + 1; i <= finalRow; i++)
 				{
-					if (occupiedPositions.Contains(locations[i][row])) return;
+					if (occupiedPositions.Contains(locations[i][col]))
+						return;
 				}
+				targetPos = locations[finalRow][col];
 				break;
 
-			case 0: // Right
-				targetPos = locations[col][finalRow];
-				for (int i = row + 1; i < finalRow; i++)
+			case 0: // Left
+				for (int i = col - 1; i >= 0; i--)
 				{
-					if (occupiedPositions.Contains(locations[col][i])) return;
+					if (occupiedPositions.Contains(locations[row][i]))
+						return;
 				}
+				targetPos = locations[row][0];
 				break;
 
-			case 180: // Left
-				targetPos = locations[col][0];
-				for (int i = row - 1; i > 0; i--)
+			case 180: // Right
+				for (int i = col + 1; i <= finalCol; i++)
 				{
-					if (occupiedPositions.Contains(locations[col][i])) return;
+					if (occupiedPositions.Contains(locations[row][i]))
+						return;
 				}
+				targetPos = locations[row][finalCol];
 				break;
-
-			default:
-				return;
 		}
 	}
 }
