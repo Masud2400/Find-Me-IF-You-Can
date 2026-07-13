@@ -15,7 +15,10 @@ public class SetBlocks : MonoBehaviour
 	
 	private Dictionary<int, Dictionary<int, Vector3>> locations;
 	private HashSet<Vector3> occupiedPositions;
+	private Dictionary<GameObject, List<GameObject>> arrowDict;
 	private Vector3 randomVector;
+	
+	private GameObject spawnedParentKey;
 	
 	private int counter = 0;
 	
@@ -23,6 +26,7 @@ public class SetBlocks : MonoBehaviour
 	{
 		locations = GridManager.Instance.locations;
 		occupiedPositions = GridManager.Instance.occupiedPositions;
+		arrowDict = GridManager.Instance.arrowDict;
 	}
 
     private void SetRandomLocation()
@@ -48,6 +52,12 @@ public class SetBlocks : MonoBehaviour
 		
 		spawnedParent = Instantiate(arrowParent, spawnParent);
 		spawnedParent.name = "Arrow" + counter;
+		
+		spawnedParentKey = spawnedParent.gameObject;
+		if (!arrowDict.ContainsKey(spawnedParentKey))
+		{
+			arrowDict[spawnedParentKey] = new List<GameObject>(); // Adding the key
+		}
 	}
 	
 	public void SpawnBlock()
@@ -58,6 +68,8 @@ public class SetBlocks : MonoBehaviour
 		
         GameObject spawnedObj = Instantiate(prefabToSpawn, spawnedParent);
 		spawnedObj.transform.localPosition = randomVector;
+		
+		arrowDict[spawnedParentKey].Add(spawnedObj); // Adding first block to the arrowDict
 		
 		Image spriteRenderer = spawnedObj.GetComponent<Image>();
 		

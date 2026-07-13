@@ -7,6 +7,7 @@ public class MoveArrow : MonoBehaviour
 	private Dictionary<int, Dictionary<int, Vector3>> locations;
     private HashSet<Vector3> occupiedPositions;
 	private Dictionary<Vector3, List<int>> firstArrowBlock;
+	private Dictionary<GameObject, List<GameObject>> arrowDict;
 	
 	[Header("Settings")]
 	[SerializeField] private float movementSpeed = 300f;
@@ -19,6 +20,7 @@ public class MoveArrow : MonoBehaviour
         locations = GridManager.Instance.locations;
         occupiedPositions = GridManager.Instance.occupiedPositions;
 		firstArrowBlock = GridManager.Instance.firstArrowBlock;
+		arrowDict = GridManager.Instance.arrowDict;
     }
 	
 	void Update()
@@ -29,14 +31,57 @@ public class MoveArrow : MonoBehaviour
 
 			if(targetPos == Vector3.zero) return;
 			
-			transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPos, step);
+			List<GameObject> arrowList = FindListByLocalPosition(transform.localPosition);
 			
-			if (Vector3.Distance(transform.localPosition, targetPos) < 0.001f)
-            {
-                transform.localPosition = targetPos;
-                isMoving = false;
-            }
+			SetBlockMovement(arrowList, step);
 		}
+	}
+	
+	private void SetBlockMovement(List<GameObject> arrowList, float step)
+	{
+		GameObject head = arrowList[0];
+		GameObject lastBlock = arrowList[arrowList.Count - 1];
+		
+		Vector3 previousPosition = head.transform.localPosition;
+		Quaternion previousRotation = head.transform.localRotation;
+		
+		head.transform.localPosition = Vector3.MoveTowards(head.transform.localPosition, targetPos, step);
+
+		for (int i = 1; i < arrowList.Count; i++)
+		{
+			GameObject currentBlock = arrowList[i];
+			
+			Vector3 nextPreviousPos = currentBlock.transform.localPosition;
+			Quaternion nextPreviousRotation = currentBlock.transform.localRotation;
+			
+			currentBlock.transform.localPosition = Vector3.MoveTowards(currentBlock.transform.localPosition, previousPosition, step);
+			currentBlock.transform.localRotation = previousRotation;
+			
+			previousPosition = nextPreviousPos;
+			previousRotation = nextPreviousRotation;
+		}
+		
+		if (Vector3.Distance(lastBlock.transform.localPosition, targetPos) < 0.001f)
+		{
+			lastBlock.transform.localPosition = targetPos;
+			isMoving = false;
+		}
+	}
+	
+	private List<GameObject> FindListByLocalPosition(Vector3 targetLocalPosition)
+	{
+		foreach (List<GameObject> arrowList in arrowDict.Values)
+		{
+			foreach (GameObject arrow in arrowList)
+			{
+				if (arrow != null && arrow.transform.localPosition == targetLocalPosition)
+				{
+					return arrowList; 
+				}
+			}
+		}
+
+		return null;
 	}
 	
 	public void MoveBlocks()
@@ -67,7 +112,6 @@ public class MoveArrow : MonoBehaviour
 						return;
 				}
 				targetPos = locations[0][col];
-				Debug.Log(targetPos);
 				break;
 
 			case 90: // Down

@@ -11,6 +11,7 @@ public class GridManager : MonoBehaviour
 	public Dictionary<int, Dictionary<int, Vector3>> locations = new Dictionary<int, Dictionary<int, Vector3>>();
 	public HashSet<Vector3> occupiedPositions = new();
 	public Dictionary<Vector3, List<int>> firstArrowBlock = new Dictionary<Vector3, List<int>>();
+	public Dictionary<GameObject, List<GameObject>> arrowDict = new Dictionary<GameObject, List<GameObject>>();
 	
 	void Awake()
 	{
