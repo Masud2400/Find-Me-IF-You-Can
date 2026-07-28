@@ -6,6 +6,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GridGen gridGen;
 	[SerializeField] private SetBlocks setBlocks;
 	[SerializeField] private SetArrows setArrows;
+	[SerializeField] private ExitChecker exitChecker;
 	
 	public static GridManager Instance;
 	public Dictionary<int, Dictionary<int, Vector3>> locations = new Dictionary<int, Dictionary<int, Vector3>>();
@@ -21,7 +22,12 @@ public class GridManager : MonoBehaviour
 	void Start()
 	{
 		gridGen.GenerateGrid();
+	}
+	
+	public void makeArrows()
+	{
 		setBlocks.SpawnBlock();
 		setArrows.setArrowLength();
+		Debug.Log(exitChecker.CheckExit());
 	}
 }

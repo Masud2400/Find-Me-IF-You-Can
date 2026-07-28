@@ -2415,6 +2415,7 @@ GameObject:
   - component: {fileID: 407797119}
   - component: {fileID: 407797118}
   - component: {fileID: 407797117}
+  - component: {fileID: 407797121}
   m_Layer: 5
   m_Name: ArrowsGame
   m_TagString: Untagged
@@ -2502,6 +2503,19 @@ MonoBehaviour:
   gridGen: {fileID: 407797119}
   setBlocks: {fileID: 407797118}
   setArrows: {fileID: 407797117}
+  exitChecker: {fileID: 407797121}
+--- !u!114 &407797121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 407797115}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4596f55f6c9c2f2469475a37a282f4fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &408375658
 GameObject:
   m_ObjectHideFlags: 0
@@ -7511,21 +7525,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 407797118}
-        m_TargetAssemblyTypeName: SetBlocks, Assembly-CSharp
-        m_MethodName: SpawnBlock
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 407797117}
-        m_TargetAssemblyTypeName: SetArrows, Assembly-CSharp
-        m_MethodName: setArrowLength
+      - m_Target: {fileID: 407797120}
+        m_TargetAssemblyTypeName: GridManager, Assembly-CSharp
+        m_MethodName: makeArrows
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

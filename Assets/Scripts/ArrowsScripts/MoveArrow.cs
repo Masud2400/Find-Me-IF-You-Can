@@ -11,6 +11,7 @@ public class MoveArrow : MonoBehaviour
 	
 	[Header("Settings")]
 	[SerializeField] private float movementSpeed = 300f;
+	[SerializeField] private float offscreenOffset = 15f;
 	
 	private Vector3 targetPos = Vector3.zero;
 	private bool isMoving = false;
@@ -42,6 +43,9 @@ public class MoveArrow : MonoBehaviour
 		GameObject head = arrowList[0];
 		GameObject lastBlock = arrowList[arrowList.Count - 1];
 		
+		// This removes the positions to clear the way
+		occupiedPositions.Remove(head.transform.localPosition);
+		
 		Vector3 previousPosition = head.transform.localPosition;
 		Quaternion previousRotation = head.transform.localRotation;
 		
@@ -50,6 +54,9 @@ public class MoveArrow : MonoBehaviour
 		for (int i = 1; i < arrowList.Count; i++)
 		{
 			GameObject currentBlock = arrowList[i];
+			
+			// This removes the positions to clear the way
+			occupiedPositions.Remove(arrowList[i].transform.localPosition);
 			
 			Vector3 nextPreviousPos = currentBlock.transform.localPosition;
 			Quaternion nextPreviousRotation = currentBlock.transform.localRotation;
@@ -111,7 +118,7 @@ public class MoveArrow : MonoBehaviour
 					if (occupiedPositions.Contains(locations[i][col]))
 						return;
 				}
-				targetPos = locations[0][col];
+				targetPos = locations[0][col] + new Vector3(0, offscreenOffset, 0);
 				break;
 
 			case 90: // Down
@@ -120,7 +127,7 @@ public class MoveArrow : MonoBehaviour
 					if (occupiedPositions.Contains(locations[i][col]))
 						return;
 				}
-				targetPos = locations[finalRow][col];
+				targetPos = locations[finalRow][col] + new Vector3(0, -offscreenOffset, 0);
 				break;
 
 			case 0: // Left
@@ -129,7 +136,7 @@ public class MoveArrow : MonoBehaviour
 					if (occupiedPositions.Contains(locations[row][i]))
 						return;
 				}
-				targetPos = locations[row][0];
+				targetPos = locations[row][0] + new Vector3(-offscreenOffset, 0, 0);
 				break;
 
 			case 180: // Right
@@ -138,7 +145,7 @@ public class MoveArrow : MonoBehaviour
 					if (occupiedPositions.Contains(locations[row][i]))
 						return;
 				}
-				targetPos = locations[row][finalCol];
+				targetPos = locations[row][finalCol] + new Vector3(offscreenOffset, 0, 0);
 				break;
 		}
 	}
