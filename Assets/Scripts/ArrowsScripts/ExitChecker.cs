@@ -8,7 +8,9 @@ public class ExitChecker : MonoBehaviour
 	private Dictionary<GameObject, List<GameObject>> arrowDict;
 	private Dictionary<Vector3, List<int>> firstArrowBlock;
 	
-	private List<GameObject> arrowCycle = new List<GameObject>();
+	//Infinite loop guard
+	private int maxIterations = 100;
+	private int currentIteration = 0;
 	
     void Start()
 	{
@@ -23,24 +25,6 @@ public class ExitChecker : MonoBehaviour
 		
 		if (!firstArrowBlock.TryGetValue(firstBlock, out List<int> values) || values.Count < 3)
 		{
-			/*
-			//Debugging
-			Debug.Log("The firstBloc: " + firstBlock);
-			
-			foreach (var pair in arrowDict)
-			{
-				Debug.Log($"Key: {pair.Key.name}");
-
-				foreach (var obj in pair.Value)
-				{
-					Debug.Log($"  {obj.name} - {obj.transform.localPosition}");
-				}
-			}
-			
-			foreach (var key in firstArrowBlock.Keys)
-			{
-				Debug.Log($"Key: {key}");
-			}*/
 			return;
 		}
 
@@ -113,51 +97,48 @@ public class ExitChecker : MonoBehaviour
 	}
 	
 	public bool CheckExit()
-	{
-		arrowCycle.Clear();
-
+	{	
 		GameObject currentArrow = arrowDict.Last().Key;
+		GameObject nextArrow = null;
 		
-		/*
-		//Debugging
-		Debug.Log($"Starting from {currentArrow.name}");
-		*/
+		GameObject firstBlock = GetFirstBlock(currentArrow);
+		GetTargetPos(firstBlock.transform.localPosition, out Vector3 targetPos);
+		nextArrow = GetKeyByPosition(targetPos);
 
-		while (currentArrow != null)
+		while (nextArrow != null)
 		{	
-			/*
-			//Debugging
-			Debug.Log($"Current: {currentArrow.name} ({currentArrow.GetInstanceID()})");
-			*/
-			
-			if (arrowCycle.Contains(currentArrow))
+			if (++currentIteration > maxIterations)
 			{
+				Debug.LogError("Infinite loop detected! Aborting loop.");
+				break;
+			}
+			
+			//Debugging
+			Debug.Log("Current Arrow: " + currentArrow);
+			Debug.Log("Next Arrow: " + nextArrow);
+			
+			firstBlock = GetFirstBlock(nextArrow);
+
+			GetTargetPos(firstBlock.transform.localPosition, out targetPos);
+
+			nextArrow = GetKeyByPosition(targetPos);
+			
+			if(nextArrow == currentArrow)
+			{
+				//Debugging
+				Debug.Log(nextArrow);
+				
 				RemoveObjects(currentArrow);
 				return false;
 			}
-
-			arrowCycle.Add(currentArrow);
-
-			GameObject firstBlock = GetFirstBlock(currentArrow);
-
-			GetTargetPos(firstBlock.transform.localPosition, out Vector3 targetPos);
-
-			currentArrow = GetKeyByPosition(targetPos);
 			
-			/*
-			// Debugging
-			Debug.Log(firstBlock.transform.localPosition);
-			Debug.Log(targetPos);*/
-			
-			/*
-			// Debugging
-			Debug.Log(currentArrow == null
-				? "Next: null"
-				: $"Next: {currentArrow.name} ({currentArrow.GetInstanceID()})");
-			*/
-			
-			if (currentArrow == null)
+			if (nextArrow == null)
+			{
+				//Debugging
+				Debug.Log(nextArrow);
+				
 				return true;
+			}
 		}
 		return true;
 	}
