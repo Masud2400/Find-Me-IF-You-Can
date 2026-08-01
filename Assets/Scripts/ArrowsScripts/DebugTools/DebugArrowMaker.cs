@@ -1,5 +1,31 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
+using System.IO;
+
+[Serializable]
+public class ArrowWrapper
+{
+    public List<ArrowEntry> arrows;
+}
+
+[Serializable]
+public class ArrowEntry
+{
+    public string name;
+    public PositionData position;
+	public int row;
+	public int col;
+	public int angle;
+}
+
+[Serializable]
+public class PositionData
+{
+    public float x;
+    public float y;
+    public float z;
+}
 
 public class DebugArrowMaker : MonoBehaviour
 {
@@ -7,7 +33,13 @@ public class DebugArrowMaker : MonoBehaviour
     private Dictionary<GameObject, List<GameObject>> arrowDict;
 	private Dictionary<Vector3, List<int>> firstArrowBlock;
 	
-	private int counter = 0;
+	private string filePath;
+	
+	void Awake()
+	{
+		string documentsPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+		filePath = Path.Combine(documentsPath, "data.json");
+	}
 	
 	void Start()
 	{
@@ -16,52 +48,46 @@ public class DebugArrowMaker : MonoBehaviour
 		firstArrowBlock = GridManager.Instance.firstArrowBlock;
 	}
 	
+	private ArrowWrapper LoadData()
+    {
+        return JsonUtility.FromJson<ArrowWrapper>(File.ReadAllText(filePath));
+    }
+	
 	public void FillArrows()
 	{	
-		GameObject leftLookingArrow = new GameObject("Left Looking Arrow");
-		leftLookingArrow.transform.localPosition = locations[0][2];
-		
-		GameObject leftLookingArrowTwo = new GameObject("Left Looking Arrow Two");
-		leftLookingArrowTwo.transform.localPosition = locations[1][2];
+		ArrowWrapper data = LoadData();
+		HashSet<string> processedArrows = new HashSet<string>();
 
-		//GameObject rightLookingArrow = new GameObject("Right Looking Arrow");
-		//rightLookingArrow.transform.localPosition = locations[0][0];
-		
-		if(counter == 0)
+		foreach (ArrowEntry entry in data.arrows)
 		{
-			GameObject arrowOne = new GameObject("ArrowOne");
+			GameObject arrow = GameObject.Find(entry.name);
+
+			if (!arrowDict.TryGetValue(arrow, out List<GameObject> points))
+			{
+				points = new List<GameObject>();
+				arrowDict.Add(arrow, points);
+			}
+
+			GameObject point = new GameObject("Block");
 			
-			arrowDict[arrowOne] = new List<GameObject>();
-			arrowDict[arrowOne].Add(leftLookingArrow);
+			point.transform.SetParent(arrow.transform, false);
+
+			point.transform.localPosition = new Vector3(
+				entry.position.x,
+				entry.position.y,
+				entry.position.z);
+
+			points.Add(point);
 			
-			firstArrowBlock[leftLookingArrow.transform.localPosition] = new List<int> { 0, 2, 90 };
-			
-			counter += 1;
-			return;
+			if (processedArrows.Add(entry.name))
+			{
+				firstArrowBlock[point.transform.localPosition] = new List<int>
+				{
+					entry.row,
+					entry.col,
+					entry.angle
+				};
+			}
 		}
-		
-		if(counter == 1)
-		{
-			GameObject arrowTwo = new GameObject("ArrowTwo");
-			
-			arrowDict[arrowTwo] = new List<GameObject>();
-			arrowDict[arrowTwo].Add(leftLookingArrowTwo);
-			
-			firstArrowBlock[leftLookingArrowTwo.transform.localPosition] = new List<int> { 1, 2, 270 };
-			
-			counter += 1;
-			return;
-		}
-		
-		/*
-		if(counter == 2)
-		{
-			GameObject arrowThree = new GameObject("ArrowThree");
-			
-			arrowDict[arrowThree] = new List<GameObject>();
-			arrowDict[arrowThree].Add(rightLookingArrow);
-			
-			firstArrowBlock[rightLookingArrow.transform.localPosition] = new List<int> { 0, 0, 180 };
-		}*/
 	}
 }
