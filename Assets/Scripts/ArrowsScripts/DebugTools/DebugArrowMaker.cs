@@ -29,9 +29,9 @@ public class PositionData
 
 public class DebugArrowMaker : MonoBehaviour
 {
-	private Dictionary<int, Dictionary<int, Vector3>> locations;
     private Dictionary<GameObject, List<GameObject>> arrowDict;
 	private Dictionary<Vector3, List<int>> firstArrowBlock;
+	private HashSet<Vector3> occupiedPositions;
 	
 	private string filePath;
 	
@@ -43,9 +43,9 @@ public class DebugArrowMaker : MonoBehaviour
 	
 	void Start()
 	{
-		locations = GridManager.Instance.locations;
 		arrowDict = GridManager.Instance.arrowDict;
 		firstArrowBlock = GridManager.Instance.firstArrowBlock;
+		occupiedPositions = GridManager.Instance.occupiedPositions;
 	}
 	
 	private ArrowWrapper LoadData()
@@ -61,6 +61,11 @@ public class DebugArrowMaker : MonoBehaviour
 		foreach (ArrowEntry entry in data.arrows)
 		{
 			GameObject arrow = GameObject.Find(entry.name);
+
+			if (arrow == null)
+			{
+				arrow = new GameObject(entry.name);
+			}
 
 			if (!arrowDict.TryGetValue(arrow, out List<GameObject> points))
 			{
@@ -79,6 +84,8 @@ public class DebugArrowMaker : MonoBehaviour
 
 			points.Add(point);
 			
+			occupiedPositions.Add(point.transform.localPosition);
+			
 			if (processedArrows.Add(entry.name))
 			{
 				firstArrowBlock[point.transform.localPosition] = new List<int>
@@ -89,5 +96,7 @@ public class DebugArrowMaker : MonoBehaviour
 				};
 			}
 		}
+		
+		LogData.SaveToJson(arrowDict, firstArrowBlock);
 	}
 }
