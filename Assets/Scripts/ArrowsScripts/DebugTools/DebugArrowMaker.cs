@@ -96,7 +96,5 @@ public class DebugArrowMaker : MonoBehaviour
 				};
 			}
 		}
-		
-		LogData.SaveToJson(arrowDict, firstArrowBlock);
 	}
 }

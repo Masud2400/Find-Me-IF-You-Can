@@ -11,10 +11,6 @@ public class ExitChecker : MonoBehaviour
 	
 	private Dictionary<GameObject, HashSet<GameObject>> arrowConnections = new Dictionary<GameObject, HashSet<GameObject>>();
 	
-	//Infinite loop guard
-	private int maxIterations = 1000;
-	private int currentIteration = 0;
-	
     void Start()
 	{
 		locations = GridManager.Instance.locations;
@@ -92,9 +88,14 @@ public class ExitChecker : MonoBehaviour
 		{
 			foreach (GameObject obj in pair.Value)
 			{
-				if (obj != null && obj.transform.localPosition == targetPos)
+				if ((obj.transform.localPosition - targetPos).sqrMagnitude < 0.0001f) 
 				{
+					Debug.Log($"Pair: {pair}; Obj: {obj.transform.localPosition:R}; TargetPos: {targetPos:R}");
 					return pair.Key;
+				}
+				else
+				{
+					Debug.Log($"Pair: {pair}; Obj: {obj.transform.localPosition:R}; TargetPos: {targetPos:R}");
 				}
 			}
 		}
@@ -115,6 +116,7 @@ public class ExitChecker : MonoBehaviour
 			{
 				if (child != null)
 				{
+					occupiedPositions.Remove(child.transform.localPosition);
 					Destroy(child);
 				}
 			}
@@ -162,13 +164,7 @@ public class ExitChecker : MonoBehaviour
 		visited.Add(startNode);
 
 		while (toVisit.Count > 0)
-		{
-			if (++currentIteration > maxIterations)
-			{
-				Debug.LogError("Infinite loop detected! Aborting loop.");
-				break;
-			}
-			
+		{	
 			GameObject current = toVisit.Dequeue();
 
 			if (arrowConnections.TryGetValue(current, out var neighbors))

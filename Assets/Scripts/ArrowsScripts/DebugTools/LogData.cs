@@ -4,7 +4,6 @@ using System.IO;
 
 public class LogData
 {
-    // 1. Create serializable wrappers because JsonUtility doesn't support Dictionaries
     [System.Serializable]
     public class ArrowEntry
     {
@@ -20,42 +19,155 @@ public class LogData
     }
 
     [System.Serializable]
+    public class ConnectionEntry
+    {
+        public string groupName;
+        public List<string> connections = new List<string>();
+    }
+
+    // For Dictionary<int, Dictionary<int, Vector3>>
+    [System.Serializable]
+    public class LocationEntry
+    {
+        public int x;
+        public int y;
+        public Vector3 position;
+    }
+
+    [System.Serializable]
+    public class OccupiedPositionEntry
+    {
+        public Vector3 position;
+    }
+
+    [System.Serializable]
     public class SaveDataWrapper
     {
         public List<ArrowEntry> arrows = new List<ArrowEntry>();
         public List<BlockEntry> blocks = new List<BlockEntry>();
+        public List<ConnectionEntry> allConnections = new List<ConnectionEntry>();
+
+        // Used by SaveToJsonTwo
+        public List<LocationEntry> locations = new List<LocationEntry>();
+        public List<OccupiedPositionEntry> occupiedPositions = new List<OccupiedPositionEntry>();
     }
 
     public static void SaveToJson(
-		Dictionary<GameObject, List<GameObject>> arrowDict, 
-        Dictionary<Vector3, List<int>> firstArrowBlock)
+        Dictionary<GameObject, List<GameObject>> arrowDict,
+        Dictionary<Vector3, List<int>> firstArrowBlock,
+        Dictionary<GameObject, HashSet<GameObject>> arrowConnections)
     {
         SaveDataWrapper wrapper = new SaveDataWrapper();
 
-        // 3. Convert GameObject Dict (saving object names instead of the GameObjects themselves)
         foreach (var kvp in arrowDict)
         {
-            ArrowEntry entry = new ArrowEntry { keyObject = kvp.Key.name };
+            ArrowEntry entry = new ArrowEntry
+            {
+                keyObject = kvp.Key.name
+            };
+
             foreach (var go in kvp.Value)
             {
                 entry.valueObjects.Add(go.transform.localPosition);
             }
+
             wrapper.arrows.Add(entry);
         }
 
-        // 4. Convert Vector3 Dict
         foreach (var kvp in firstArrowBlock)
         {
-            wrapper.blocks.Add(new BlockEntry { keyVector = kvp.Key, values = kvp.Value });
+            wrapper.blocks.Add(new BlockEntry
+            {
+                keyVector = kvp.Key,
+                values = kvp.Value
+            });
         }
 
-        // 5. Serialize and write to the specified path
+        foreach (var kvp in arrowConnections)
+        {
+            ConnectionEntry entry = new ConnectionEntry
+            {
+                groupName = kvp.Key.name
+            };
+
+            foreach (var go in kvp.Value)
+            {
+                entry.connections.Add(go != null ? go.name : null);
+            }
+
+            wrapper.allConnections.Add(entry);
+        }
+
         string json = JsonUtility.ToJson(wrapper, true);
-        
-        string documentsPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+
+        string documentsPath =
+            System.Environment.GetFolderPath(
+                System.Environment.SpecialFolder.MyDocuments);
+
         string filePath = Path.Combine(documentsPath, "dataTwo.json");
-        
+
         File.WriteAllText(filePath, json);
-        Debug.Log("Data successfully saved to: " + filePath);
+    }
+
+    public static void SaveToJsonTwo(
+        Dictionary<int, Dictionary<int, Vector3>> locations,
+        HashSet<Vector3> occupiedPositions,
+		Dictionary<GameObject, List<GameObject>> arrowDict)
+    {
+        SaveDataWrapper wrapper = new SaveDataWrapper();
+
+        // Save locations
+        foreach (var outerEntry in locations)
+        {
+            int x = outerEntry.Key;
+
+            foreach (var innerEntry in outerEntry.Value)
+            {
+                int y = innerEntry.Key;
+                Vector3 position = innerEntry.Value;
+
+                wrapper.locations.Add(new LocationEntry
+                {
+                    x = x,
+                    y = y,
+                    position = position
+                });
+            }
+        }
+
+        // Save occupied positions
+        foreach (Vector3 position in occupiedPositions)
+        {
+            wrapper.occupiedPositions.Add(new OccupiedPositionEntry
+            {
+                position = position
+            });
+        }
+		
+		foreach (var kvp in arrowDict)
+        {
+            ArrowEntry entry = new ArrowEntry
+            {
+                keyObject = kvp.Key.name
+            };
+
+            foreach (var go in kvp.Value)
+            {
+                entry.valueObjects.Add(go.transform.localPosition);
+            }
+
+            wrapper.arrows.Add(entry);
+        }
+
+        // Convert everything to JSON
+        string json = JsonUtility.ToJson(wrapper, true);
+
+        string documentsPath =
+            System.Environment.GetFolderPath(
+                System.Environment.SpecialFolder.MyDocuments);
+
+        string filePath = Path.Combine(documentsPath, "dataThree.json");
+
+        File.WriteAllText(filePath, json);
     }
 }

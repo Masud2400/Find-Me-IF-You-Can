@@ -27,17 +27,22 @@ public class GridManager : MonoBehaviour
 		gridGen.GenerateGrid();
 	}
 	
+	/*
 	//Debugging
 	public void CreateInterface()
 	{
 		debugInterface.MakeInterface();
-	}
+	}*/
 	
 	public void makeArrows()
 	{
-		//setBlocks.SpawnBlock();
-		//setArrows.setArrowLength();
-		debugArrowMaker.FillArrows();
-		Debug.Log(exitChecker.CheckExit());
+		for(int i = 0; i <= 30; i++)
+		{
+			setBlocks.SpawnBlock();
+			setArrows.setArrowLength();
+			//debugArrowMaker.FillArrows();
+			exitChecker.CheckExit();
+			//LogData.SaveToJsonTwo(locations, occupiedPositions, arrowDict);
+		}
 	}
 }

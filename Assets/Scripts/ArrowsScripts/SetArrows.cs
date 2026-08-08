@@ -15,7 +15,7 @@ public class SetArrows : MonoBehaviour
 	private Dictionary<Vector3, List<int>> firstArrowBlock;
 	private Dictionary<GameObject, List<GameObject>> arrowDict;
 	
-	private int counter = 0;
+	//private int counter = 0;
 	private Vector3 firstBlockPos;
 	private int _directionIndex = 0;
 
@@ -50,7 +50,7 @@ public class SetArrows : MonoBehaviour
 				out int targetRowStep,
 				out int targetColStep);
 			
-			if(targetPosition == Vector3.zero)
+			if(targetPosition == Vector3.zero) // Possible bug
 			{
 				return;
 			}
@@ -196,10 +196,10 @@ public class SetArrows : MonoBehaviour
 	
 	private void ReturnArrowContainer()
 	{	
-		arrowContainerKey = arrowDict.Keys.ElementAt(counter); // Getting the key for the arrow
+		arrowContainerKey = arrowDict.Keys.Last(); // Getting the key for the arrow
 		arrowContainer = arrowDict[arrowContainerKey]; // Getting the right arrow container
 		
-		counter += 1;
+		//counter += 1;
 	}
 	
 	private void RotateBlock(int rowStep, int colStep)
@@ -253,9 +253,9 @@ public class SetArrows : MonoBehaviour
     {
 		ReturnArrowContainer();
 		
-        for (int i = 0; i <= 4; i++)
-        {	
-            PlaceArrows();
-        }
+		for (int i = 0; i <= 4; i++)
+		{	
+			PlaceArrows();
+		}
     }
 }
