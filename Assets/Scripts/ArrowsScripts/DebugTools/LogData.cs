@@ -8,7 +8,7 @@ public class LogData
     public class ArrowEntry
     {
         public string keyObject;
-        public List<Vector3> valueObjects = new List<Vector3>();
+        //public List<Vector3> valueObjects = new List<Vector3>();
     }
 
     [System.Serializable]
@@ -44,18 +44,19 @@ public class LogData
     public class SaveDataWrapper
     {
         public List<ArrowEntry> arrows = new List<ArrowEntry>();
-        public List<BlockEntry> blocks = new List<BlockEntry>();
-        public List<ConnectionEntry> allConnections = new List<ConnectionEntry>();
+        //public List<BlockEntry> blocks = new List<BlockEntry>();
+        //public List<ConnectionEntry> allConnections = new List<ConnectionEntry>();
 
         // Used by SaveToJsonTwo
-        public List<LocationEntry> locations = new List<LocationEntry>();
-        public List<OccupiedPositionEntry> occupiedPositions = new List<OccupiedPositionEntry>();
+        //public List<LocationEntry> locations = new List<LocationEntry>();
+        //public List<OccupiedPositionEntry> occupiedPositions = new List<OccupiedPositionEntry>();
     }
 
     public static void SaveToJson(
-        Dictionary<GameObject, List<GameObject>> arrowDict,
-        Dictionary<Vector3, List<int>> firstArrowBlock,
-        Dictionary<GameObject, HashSet<GameObject>> arrowConnections)
+        Dictionary<string, List<BlockData>> arrowDict
+        //Dictionary<Vector3, List<int>> firstArrowBlock,
+        //Dictionary<string, HashSet<string>> arrowConnections
+		)
     {
         SaveDataWrapper wrapper = new SaveDataWrapper();
 
@@ -63,17 +64,18 @@ public class LogData
         {
             ArrowEntry entry = new ArrowEntry
             {
-                keyObject = kvp.Key.name
+                keyObject = kvp.Key
             };
 
-            foreach (var go in kvp.Value)
+            /*foreach (BlockData go in kvp.Value)
             {
-                entry.valueObjects.Add(go.transform.localPosition);
-            }
+                entry.valueObjects.Add(go.position);
+            }*/
 
             wrapper.arrows.Add(entry);
         }
-
+		
+		/*
         foreach (var kvp in firstArrowBlock)
         {
             wrapper.blocks.Add(new BlockEntry
@@ -87,16 +89,16 @@ public class LogData
         {
             ConnectionEntry entry = new ConnectionEntry
             {
-                groupName = kvp.Key.name
+                groupName = kvp.Key
             };
 
             foreach (var go in kvp.Value)
             {
-                entry.connections.Add(go != null ? go.name : null);
+                entry.connections.Add(go != null ? go : null);
             }
 
             wrapper.allConnections.Add(entry);
-        }
+        }*/
 
         string json = JsonUtility.ToJson(wrapper, true);
 
@@ -108,11 +110,11 @@ public class LogData
 
         File.WriteAllText(filePath, json);
     }
-
+	
+	/*
     public static void SaveToJsonTwo(
         Dictionary<int, Dictionary<int, Vector3>> locations,
-        HashSet<Vector3> occupiedPositions,
-		Dictionary<GameObject, List<GameObject>> arrowDict)
+        HashSet<Vector3> occupiedPositions)
     {
         SaveDataWrapper wrapper = new SaveDataWrapper();
 
@@ -143,21 +145,6 @@ public class LogData
                 position = position
             });
         }
-		
-		foreach (var kvp in arrowDict)
-        {
-            ArrowEntry entry = new ArrowEntry
-            {
-                keyObject = kvp.Key.name
-            };
-
-            foreach (var go in kvp.Value)
-            {
-                entry.valueObjects.Add(go.transform.localPosition);
-            }
-
-            wrapper.arrows.Add(entry);
-        }
 
         // Convert everything to JSON
         string json = JsonUtility.ToJson(wrapper, true);
@@ -169,5 +156,5 @@ public class LogData
         string filePath = Path.Combine(documentsPath, "dataThree.json");
 
         File.WriteAllText(filePath, json);
-    }
+    }*/
 }

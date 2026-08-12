@@ -7,7 +7,7 @@ public class MoveArrow : MonoBehaviour
 	private Dictionary<int, Dictionary<int, Vector3>> locations;
     private HashSet<Vector3> occupiedPositions;
 	private Dictionary<Vector3, List<int>> firstArrowBlock;
-	private Dictionary<GameObject, List<GameObject>> arrowDict;
+	public Dictionary<Transform, List<GameObject>> gameObjectReference;
 	
 	[Header("Settings")]
 	[SerializeField] private float movementSpeed = 300f;
@@ -21,7 +21,7 @@ public class MoveArrow : MonoBehaviour
         locations = GridManager.Instance.locations;
         occupiedPositions = GridManager.Instance.occupiedPositions;
 		firstArrowBlock = GridManager.Instance.firstArrowBlock;
-		arrowDict = GridManager.Instance.arrowDict;
+		gameObjectReference = GridManager.Instance.gameObjectReference;
     }
 	
 	void Update()
@@ -30,7 +30,7 @@ public class MoveArrow : MonoBehaviour
 		{
 			float step = movementSpeed * Time.deltaTime;
 
-			if(targetPos == Vector3.zero) return;
+			if(targetPos == Vector3.zero) return; //Possible bug
 			
 			List<GameObject> arrowList = FindListByLocalPosition(transform.localPosition);
 			
@@ -39,7 +39,7 @@ public class MoveArrow : MonoBehaviour
 	}
 	
 	private void SetBlockMovement(List<GameObject> arrowList, float step)
-	{
+	{	
 		GameObject head = arrowList[0];
 		GameObject lastBlock = arrowList[arrowList.Count - 1];
 		
@@ -77,7 +77,7 @@ public class MoveArrow : MonoBehaviour
 	
 	private List<GameObject> FindListByLocalPosition(Vector3 targetLocalPosition)
 	{
-		foreach (List<GameObject> arrowList in arrowDict.Values)
+		foreach (List<GameObject> arrowList in gameObjectReference.Values)
 		{
 			foreach (GameObject arrow in arrowList)
 			{
@@ -92,11 +92,12 @@ public class MoveArrow : MonoBehaviour
 	}
 	
 	public void MoveBlocks()
-	{
+	{	
+		//Debugging
+		Debug.Log("Arrow clicked");
+	
 		if(isMoving) return;
 		isMoving = true;
-		
-		Debug.Log("Button pressed");
 		
 		Vector3 currentPos = transform.localPosition;
 		
@@ -116,7 +117,10 @@ public class MoveArrow : MonoBehaviour
 				for (int i = row - 1; i >= 0; i--)
 				{
 					if (occupiedPositions.Contains(locations[i][col]))
+					{
+						Debug.Log($"Blocked by {locations[i][col]}");
 						return;
+					}
 				}
 				targetPos = locations[0][col] + new Vector3(0, offscreenOffset, 0);
 				break;
@@ -125,7 +129,10 @@ public class MoveArrow : MonoBehaviour
 				for (int i = row + 1; i <= finalRow; i++)
 				{
 					if (occupiedPositions.Contains(locations[i][col]))
+					{
+						Debug.Log($"Blocked by {locations[i][col]}");
 						return;
+					}
 				}
 				targetPos = locations[finalRow][col] + new Vector3(0, -offscreenOffset, 0);
 				break;
@@ -134,7 +141,10 @@ public class MoveArrow : MonoBehaviour
 				for (int i = col - 1; i >= 0; i--)
 				{
 					if (occupiedPositions.Contains(locations[row][i]))
+					{
+						Debug.Log($"Blocked by {locations[row][i]}");
 						return;
+					}
 				}
 				targetPos = locations[row][0] + new Vector3(-offscreenOffset, 0, 0);
 				break;
@@ -143,7 +153,10 @@ public class MoveArrow : MonoBehaviour
 				for (int i = col + 1; i <= finalCol; i++)
 				{
 					if (occupiedPositions.Contains(locations[row][i]))
+					{
+						Debug.Log($"Blocked by {locations[row][i]}");
 						return;
+					}
 				}
 				targetPos = locations[row][finalCol] + new Vector3(offscreenOffset, 0, 0);
 				break;

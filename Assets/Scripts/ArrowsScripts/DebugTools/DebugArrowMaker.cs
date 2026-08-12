@@ -29,7 +29,7 @@ public class PositionData
 
 public class DebugArrowMaker : MonoBehaviour
 {
-    private Dictionary<GameObject, List<GameObject>> arrowDict;
+    private Dictionary<string, List<BlockData>> arrowDict;
 	private Dictionary<Vector3, List<int>> firstArrowBlock;
 	private HashSet<Vector3> occupiedPositions;
 	
@@ -59,36 +59,32 @@ public class DebugArrowMaker : MonoBehaviour
 		HashSet<string> processedArrows = new HashSet<string>();
 
 		foreach (ArrowEntry entry in data.arrows)
-		{
-			GameObject arrow = GameObject.Find(entry.name);
+		{	
+			string arrow = entry.name;
 
-			if (arrow == null)
+			if (!arrowDict.TryGetValue(arrow, out List<BlockData> points))
 			{
-				arrow = new GameObject(entry.name);
-			}
-
-			if (!arrowDict.TryGetValue(arrow, out List<GameObject> points))
-			{
-				points = new List<GameObject>();
+				points = new List<BlockData>();
 				arrowDict.Add(arrow, points);
 			}
 
-			GameObject point = new GameObject("Block");
-			
-			point.transform.SetParent(arrow.transform, false);
+			Vector3 point = Vector3.zero;
 
-			point.transform.localPosition = new Vector3(
+			point = new Vector3(
 				entry.position.x,
 				entry.position.y,
 				entry.position.z);
 
-			points.Add(point);
+			points.Add(new BlockData
+			{
+				position = point
+			});
 			
-			occupiedPositions.Add(point.transform.localPosition);
+			occupiedPositions.Add(point);
 			
 			if (processedArrows.Add(entry.name))
 			{
-				firstArrowBlock[point.transform.localPosition] = new List<int>
+				firstArrowBlock[point] = new List<int>
 				{
 					entry.row,
 					entry.col,

@@ -5,11 +5,11 @@ using System.Linq;
 public class ExitChecker : MonoBehaviour
 {
 	private Dictionary<int, Dictionary<int, Vector3>> locations;
-	private Dictionary<GameObject, List<GameObject>> arrowDict;
+	private Dictionary<string, List<BlockData>> arrowDict;
 	private Dictionary<Vector3, List<int>> firstArrowBlock;
 	private HashSet<Vector3> occupiedPositions;
 	
-	private Dictionary<GameObject, HashSet<GameObject>> arrowConnections = new Dictionary<GameObject, HashSet<GameObject>>();
+	private Dictionary<string, HashSet<string>> arrowConnections = new Dictionary<string, HashSet<string>>();
 	
     void Start()
 	{
@@ -82,49 +82,37 @@ public class ExitChecker : MonoBehaviour
 		}
 	}
 	
-	private GameObject GetKeyByPosition(Vector3 targetPos)
+	private string GetKeyByPosition(Vector3 targetPos)
 	{
 		foreach (var pair in arrowDict)
 		{
-			foreach (GameObject obj in pair.Value)
+			foreach (BlockData obj in pair.Value)
 			{
-				if ((obj.transform.localPosition - targetPos).sqrMagnitude < 0.0001f) 
+				if ((obj.position - targetPos).sqrMagnitude < 0.0001f) 
 				{
-					Debug.Log($"Pair: {pair}; Obj: {obj.transform.localPosition:R}; TargetPos: {targetPos:R}");
 					return pair.Key;
-				}
-				else
-				{
-					Debug.Log($"Pair: {pair}; Obj: {obj.transform.localPosition:R}; TargetPos: {targetPos:R}");
 				}
 			}
 		}
 		return null;
 	}
 	
-	private GameObject GetFirstBlock(GameObject parentArrow)
+	private BlockData GetFirstBlock(string parentArrow)
 	{
 		return arrowDict[parentArrow][0];
 	}
 	
-	private void RemoveObjects(GameObject currentArrow)
+	private void RemoveObjects(string currentArrow)
 	{
-		if (arrowDict.TryGetValue(currentArrow, out List<GameObject> children))
+		if (arrowDict.TryGetValue(currentArrow, out List<BlockData> children))
 		{
 			// Destroy all children
-			foreach (GameObject child in children)
+			foreach (BlockData child in children)
 			{
 				if (child != null)
 				{
-					occupiedPositions.Remove(child.transform.localPosition);
-					Destroy(child);
+					occupiedPositions.Remove(child.position);
 				}
-			}
-
-			// Destroy the parent
-			if (currentArrow != null)
-			{
-				Destroy(currentArrow);
 			}
 
 			// Clean up the dictionary
@@ -138,13 +126,13 @@ public class ExitChecker : MonoBehaviour
 		{
 			var key = kvp.Key;
 			
-			GameObject firstBlock = GetFirstBlock(key);
+			BlockData firstBlock = GetFirstBlock(key);
 			
-			GetTargetPos(firstBlock.transform.localPosition, out HashSet<Vector3> targetPositions);
+			GetTargetPos(firstBlock.position, out HashSet<Vector3> targetPositions);
 			
 			if (!arrowConnections.ContainsKey(key))
 			{
-				arrowConnections[key] = new HashSet<GameObject>();
+				arrowConnections[key] = new HashSet<string>();
 			}
 			
 			foreach(var pos in targetPositions)
@@ -155,21 +143,21 @@ public class ExitChecker : MonoBehaviour
 		}
 	}
 	
-	private bool DetectCycleBFS(GameObject startNode)
+	private bool DetectCycleBFS(string startNode)
 	{	
-		Queue<GameObject> toVisit = new Queue<GameObject>();
-		HashSet<GameObject> visited = new HashSet<GameObject>();
+		Queue<string> toVisit = new Queue<string>();
+		HashSet<string> visited = new HashSet<string>();
 
 		toVisit.Enqueue(startNode);
 		visited.Add(startNode);
 
 		while (toVisit.Count > 0)
 		{	
-			GameObject current = toVisit.Dequeue();
+			string current = toVisit.Dequeue();
 
 			if (arrowConnections.TryGetValue(current, out var neighbors))
 			{
-				foreach (GameObject neighbor in neighbors)
+				foreach (string neighbor in neighbors)
 				{
 					// Found a connection pointing back to start
 					if (neighbor == startNode)
@@ -192,7 +180,7 @@ public class ExitChecker : MonoBehaviour
 	
 	public bool CheckExit()
 	{
-		GameObject currentArrow = arrowDict.Last().Key;
+		string currentArrow = arrowDict.Last().Key;
 		
 		SaveAllConnections();
 		

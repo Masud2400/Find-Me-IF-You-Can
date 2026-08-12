@@ -7,13 +7,13 @@ public class SetArrows : MonoBehaviour
     [Header("Game Objects")]
     [SerializeField] private GameObject prefabToSpawn;
     [SerializeField] private Transform spawnParent;
-	private List<GameObject> arrowContainer;
-	private GameObject arrowContainerKey;
+	private List<BlockData> arrowContainer;
+	private string arrowContainerKey;
 
     private Dictionary<int, Dictionary<int, Vector3>> locations;
     private HashSet<Vector3> occupiedPositions;
 	private Dictionary<Vector3, List<int>> firstArrowBlock;
-	private Dictionary<GameObject, List<GameObject>> arrowDict;
+	private Dictionary<string, List<BlockData>> arrowDict;
 	
 	//private int counter = 0;
 	private Vector3 firstBlockPos;
@@ -32,11 +32,11 @@ public class SetArrows : MonoBehaviour
         if (arrowContainer.Count == 0)
             return;
 
-        GameObject lastChild = arrowContainer[arrowContainer.Count - 1]; // This is the last block
+        Vector3 lastChild = arrowContainer[^1].position; // This is the last block
 
         int blockCount = Random.Range(0, 20);
 
-        GetGridPosition(lastChild.transform.localPosition, out int currentRow, out int currentColumn);
+        GetGridPosition(lastChild, out int currentRow, out int currentColumn);
 		
 		GetFirstDirection(out int rowStep, out int colStep);
 
@@ -187,25 +187,20 @@ public class SetArrows : MonoBehaviour
     private void SpawnBlock(Vector3 position)
     {
         occupiedPositions.Add(position);
-
-        GameObject spawnedObj = Instantiate(prefabToSpawn, arrowContainerKey.transform);
-        spawnedObj.transform.localPosition = position;
 		
-		arrowDict[arrowContainerKey].Add(spawnedObj); // Adding all the other arrow blocks
+		arrowDict[arrowContainerKey].Add(new BlockData { position = position }); // Adding all the other arrow blocks
     }
 	
 	private void ReturnArrowContainer()
 	{	
 		arrowContainerKey = arrowDict.Keys.Last(); // Getting the key for the arrow
 		arrowContainer = arrowDict[arrowContainerKey]; // Getting the right arrow container
-		
-		//counter += 1;
 	}
 	
 	private void RotateBlock(int rowStep, int colStep)
 	{
-		GameObject lastChild = arrowContainer[arrowContainer.Count - 1]; // This is the last block all the time
-		GameObject previousBlock = arrowContainer[arrowContainer.Count - 2]; // The block before the last block
+		Quaternion lastChild = arrowContainer[^1].rotation; // This is the last block all the time
+		Quaternion previousBlock = arrowContainer[arrowContainer.Count - 2].rotation; // The block before the last block
 		
 		if(arrowContainer.Count == 2)
 		{
@@ -222,24 +217,23 @@ public class SetArrows : MonoBehaviour
 			
 			SaveFirstBlock(angle);
 			
-			previousBlock.transform.localRotation = Quaternion.Euler(0, 0, angle);
+			previousBlock = Quaternion.Euler(0, 0, angle);
 		}
 		
-		if(lastChild.transform.localPosition.y != previousBlock.transform.localPosition.y)
+		if(lastChild.y != previousBlock.y)
 		{
-			lastChild.transform.localRotation = Quaternion.Euler(0, 0, 90);
+			lastChild = Quaternion.Euler(0, 0, 90);
 		}
 		
-		if(lastChild.transform.localPosition.x != previousBlock.transform.localPosition.x)
+		if(lastChild.x != previousBlock.x)
 		{
-			lastChild.transform.localRotation = Quaternion.Euler(0, 0, 0);
+			lastChild = Quaternion.Euler(0, 0, 0);
 		}
 	}
 	
 	private void SaveFirstBlock(int angle)
 	{
-		GameObject firstBlock = arrowContainer[0]; // the first block of the arrow
-		firstBlockPos = firstBlock.transform.localPosition;
+		firstBlockPos = arrowContainer[0].position; // the first block of the arrow
 		
 		GetGridPosition(firstBlockPos, out int currentRow, out int currentColumn);
 		
