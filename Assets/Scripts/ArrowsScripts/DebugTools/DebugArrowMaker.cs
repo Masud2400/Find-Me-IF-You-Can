@@ -29,7 +29,9 @@ public class PositionData
 
 public class DebugArrowMaker : MonoBehaviour
 {
-    private Dictionary<string, List<BlockData>> arrowDict;
+	[SerializeField] private Data gameData;
+	
+    private Dictionary<string, List<VectorData>> arrowDict;
 	private Dictionary<Vector3, List<int>> firstArrowBlock;
 	private HashSet<Vector3> occupiedPositions;
 	
@@ -43,9 +45,9 @@ public class DebugArrowMaker : MonoBehaviour
 	
 	void Start()
 	{
-		arrowDict = GridManager.Instance.arrowDict;
-		firstArrowBlock = GridManager.Instance.firstArrowBlock;
-		occupiedPositions = GridManager.Instance.occupiedPositions;
+		arrowDict = gameData.arrowDict;
+		firstArrowBlock = gameData.firstArrowBlock;
+		occupiedPositions = gameData.occupiedPositions;
 	}
 	
 	private ArrowWrapper LoadData()
@@ -62,9 +64,9 @@ public class DebugArrowMaker : MonoBehaviour
 		{	
 			string arrow = entry.name;
 
-			if (!arrowDict.TryGetValue(arrow, out List<BlockData> points))
+			if (!arrowDict.TryGetValue(arrow, out List<VectorData> points))
 			{
-				points = new List<BlockData>();
+				points = new List<VectorData>();
 				arrowDict.Add(arrow, points);
 			}
 
@@ -75,7 +77,7 @@ public class DebugArrowMaker : MonoBehaviour
 				entry.position.y,
 				entry.position.z);
 
-			points.Add(new BlockData
+			points.Add(new VectorData
 			{
 				position = point
 			});

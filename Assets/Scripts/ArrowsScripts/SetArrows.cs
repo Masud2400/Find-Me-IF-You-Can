@@ -4,16 +4,17 @@ using System.Linq;
 
 public class SetArrows : MonoBehaviour
 {
-    [Header("Game Objects")]
-    [SerializeField] private GameObject prefabToSpawn;
-    [SerializeField] private Transform spawnParent;
-	private List<BlockData> arrowContainer;
+    private GameObject prefabToSpawn;
+    private Transform spawnParent;
+	private Data gameData;
+	
+	private List<VectorData> arrowContainer;
 	private string arrowContainerKey;
 
-    private Dictionary<int, Dictionary<int, Vector3>> locations;
+    private Dictionary<Vector2Int, GridCell> locations;
     private HashSet<Vector3> occupiedPositions;
-	private Dictionary<Vector3, List<int>> firstArrowBlock;
-	private Dictionary<string, List<BlockData>> arrowDict;
+	private Dictionary<Vector3, FirstBlock> firstArrowBlock;
+	private Dictionary<string, List<VectorData>> arrowDict;
 	
 	//private int counter = 0;
 	private Vector3 firstBlockPos;
@@ -21,10 +22,14 @@ public class SetArrows : MonoBehaviour
 
     void Start()
     {
-        locations = GridManager.Instance.locations;
-        occupiedPositions = GridManager.Instance.occupiedPositions;
-		firstArrowBlock = GridManager.Instance.firstArrowBlock;
-		arrowDict = GridManager.Instance.arrowDict;
+        locations = gameData.locations;
+        occupiedPositions = gameData.occupiedPositions;
+		firstArrowBlock = gameData.firstArrowBlock;
+		arrowDict = gameData.arrowDict;
+		
+		prefabToSpawn = AssetManager.Instance.PrefabToSpawn;
+		spawnParent = AssetManager.Instance.SpawnParent;
+		gameData = AssetManager.Instance.GameData;
     }
 
     private void PlaceArrows()
@@ -36,7 +41,10 @@ public class SetArrows : MonoBehaviour
 
         int blockCount = Random.Range(0, 20);
 
-        GetGridPosition(lastChild, out int currentRow, out int currentColumn);
+        //GetGridPosition(lastChild, out int currentRow, out int currentColumn);
+		Vector2Int index = GetIndex.GetGridIndex(lastChild);
+		int currentRow = index.x;
+		int currentColumn = index.y;
 		
 		GetFirstDirection(out int rowStep, out int colStep);
 
@@ -60,22 +68,21 @@ public class SetArrows : MonoBehaviour
 			RotateBlock(targetRowStep, targetColStep);
         }
     }
-
+	/*
     private void GetGridPosition(Vector3 position, out int row, out int column)
     {
         var matchedPair = locations.FirstOrDefault(dict => dict.Value.ContainsValue(position));
 
         row = matchedPair.Key;
         column = matchedPair.Value.FirstOrDefault(inner => inner.Value == position).Key;
-    }
+    }*/
 
     private bool IsValidAndEmpty(int row, int col)
     {
-        if (!locations.ContainsKey(row))
-            return false;
-
-        if (!locations[row].ContainsKey(col))
-            return false;
+		Vector2Int index = new Vector2Int(row, col);
+		
+        if (!locations.ContainsKey(index))
+			return false;
 		
 		if (firstArrowBlock.TryGetValue(firstBlockPos, out List<int> values) && values.Count >= 3)
 		{
@@ -98,7 +105,7 @@ public class SetArrows : MonoBehaviour
 			}
 		}
 
-        return !occupiedPositions.Contains(locations[row][col]);
+        return !occupiedPositions.Contains(locations[index].position);
     }
 	
 	private void GetFirstDirection(out int rowStep, out int colStep)
@@ -139,6 +146,8 @@ public class SetArrows : MonoBehaviour
 		int nextRow = currentRow + rowStep;
 		int nextColumn = currentColumn + colStep;
 		
+		Vector2Int index = new Vector2Int(nextRow, nextColumn);
+		
 		targetRowStep = 0;
 		targetColStep = 0;
 		
@@ -149,7 +158,7 @@ public class SetArrows : MonoBehaviour
 			currentRow = nextRow;
 			currentColumn = nextColumn;
 			
-			targetPosition = locations[nextRow][nextColumn];
+			targetPosition = locations[index].position;
 			
 			targetRowStep = rowStep;
 			targetColStep = colStep;
@@ -164,12 +173,14 @@ public class SetArrows : MonoBehaviour
 			nextRow = currentRow + neighborRow;
             nextColumn = currentColumn + neighborCol;
 			
+			index = new Vector2Int(nextRow, nextColumn);
+			
 			if (IsValidAndEmpty(nextRow, nextColumn))
             {	
 				currentRow = nextRow;
 				currentColumn = nextColumn;
 				
-                targetPosition = locations[nextRow][nextColumn];
+                targetPosition = locations[index].position;
 				
 				targetRowStep = neighborRow;
 				targetColStep = neighborCol;
@@ -188,7 +199,7 @@ public class SetArrows : MonoBehaviour
     {
         occupiedPositions.Add(position);
 		
-		arrowDict[arrowContainerKey].Add(new BlockData { position = position }); // Adding all the other arrow blocks
+		arrowDict[arrowContainerKey].Add(new VectorData { position = position }); // Adding all the other arrow blocks
     }
 	
 	private void ReturnArrowContainer()
@@ -215,7 +226,7 @@ public class SetArrows : MonoBehaviour
 				angle = colStep == 1 ? 0 : 180; // colStep one is right and 0 is left
 			}
 			
-			SaveFirstBlock(angle);
+			//SaveFirstBlock(angle);
 			
 			previousBlock = Quaternion.Euler(0, 0, angle);
 		}
@@ -230,18 +241,19 @@ public class SetArrows : MonoBehaviour
 			lastChild = Quaternion.Euler(0, 0, 0);
 		}
 	}
-	
+	/*
 	private void SaveFirstBlock(int angle)
 	{
 		firstBlockPos = arrowContainer[0].position; // the first block of the arrow
 		
-		GetGridPosition(firstBlockPos, out int currentRow, out int currentColumn);
+		//GetGridPosition(firstBlockPos, out int currentRow, out int currentColumn);
+		Vector2Int index = GetIndex.GetGridIndex(firstBlockPos);
 		
 		firstArrowBlock[firstBlockPos] = new List<int>();		
-		firstArrowBlock[firstBlockPos].Add(currentRow);
-		firstArrowBlock[firstBlockPos].Add(currentColumn);
+		firstArrowBlock[firstBlockPos].Add(index.x);
+		firstArrowBlock[firstBlockPos].Add(index.y);
 		firstArrowBlock[firstBlockPos].Add(angle);
-	}
+	}*/
 
     public void setArrowLength()
     {

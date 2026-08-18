@@ -2411,7 +2411,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 407797116}
-  - component: {fileID: 407797120}
   - component: {fileID: 407797119}
   - component: {fileID: 407797118}
   - component: {fileID: 407797117}
@@ -2461,6 +2460,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefabToSpawn: {fileID: 2348353045105963302, guid: 4e4a5a8a38c6a42449b0e6a5bd37fb6b, type: 3}
   spawnParent: {fileID: 1172805548}
+  gameData: {fileID: 11400000, guid: 6fb612d071999404e8e1d61a565371b3, type: 2}
 --- !u!114 &407797118
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2485,27 +2485,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5358682bd6f85d849a89ae4201ad922c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetImage: {fileID: 1172805548}
-  prefabToSpawn: {fileID: 2348353045105963302, guid: 4e4a5a8a38c6a42449b0e6a5bd37fb6b, type: 3}
---- !u!114 &407797120
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 407797115}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d9efeded9ce9894cbf27ad3db652cc1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gridGen: {fileID: 407797119}
-  setBlocks: {fileID: 407797118}
-  setArrows: {fileID: 407797117}
-  exitChecker: {fileID: 407797121}
-  blockManager: {fileID: 407797122}
-  debugArrowMaker: {fileID: 1157600945}
-  debugInterface: {fileID: 1157600944}
 --- !u!114 &407797121
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4004,6 +3983,7 @@ RectTransform:
   m_Children:
   - {fileID: 407797116}
   - {fileID: 1157600943}
+  - {fileID: 1515016412}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -6142,6 +6122,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 101a1cb50fdb8ba448d29827d50027db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameData: {fileID: 11400000, guid: 6fb612d071999404e8e1d61a565371b3, type: 2}
   prefabToSpawn: {fileID: 9121092009992870440, guid: fcdc22c3161706f40bcf949a246ae732, type: 3}
   spawnParent: {fileID: 1172805548}
 --- !u!114 &1157600945
@@ -6156,6 +6137,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 266871db29727e446947ef2cce47e0d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameData: {fileID: 11400000, guid: 6fb612d071999404e8e1d61a565371b3, type: 2}
 --- !u!1001 &1157815971
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8014,7 +7996,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 407797120}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: GridManager, Assembly-CSharp
         m_MethodName: makeArrows
         m_Mode: 1
@@ -8444,6 +8426,73 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2774220344278030320, guid: 5d1a024d7d4e129478528917e0e0c988, type: 3}
   m_PrefabInstance: {fileID: 1510713328}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1515016411
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1515016412}
+  - component: {fileID: 1515016414}
+  - component: {fileID: 1515016413}
+  m_Layer: 5
+  m_Name: Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1515016412
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1515016411}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 619563665}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1515016413
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1515016411}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32d2a2533127497468ef70ec425168cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetImage: {fileID: 1172805548}
+  gameData: {fileID: 11400000, guid: 6fb612d071999404e8e1d61a565371b3, type: 2}
+--- !u!114 &1515016414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1515016411}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d9efeded9ce9894cbf27ad3db652cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridGen: {fileID: 407797119}
+  setBlocks: {fileID: 407797118}
+  exitChecker: {fileID: 407797121}
+  blockManager: {fileID: 407797122}
 --- !u!1 &1518276643 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 78ee601808e63b84b99ea30fffd623c5, type: 3}
@@ -9894,9 +9943,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 407797120}
-        m_TargetAssemblyTypeName: GridManager, Assembly-CSharp
-        m_MethodName: CreateInterface
+      - m_Target: {fileID: 1157600944}
+        m_TargetAssemblyTypeName: DebugInterface, Assembly-CSharp
+        m_MethodName: MakeInterface
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

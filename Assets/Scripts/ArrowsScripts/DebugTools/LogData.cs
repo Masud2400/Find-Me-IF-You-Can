@@ -8,7 +8,7 @@ public class LogData
     public class ArrowEntry
     {
         public string keyObject;
-        //public List<Vector3> valueObjects = new List<Vector3>();
+        public List<Vector3> valueObjects = new List<Vector3>();
     }
 
     [System.Serializable]
@@ -31,7 +31,7 @@ public class LogData
     {
         public int x;
         public int y;
-        public Vector3 position;
+        //public Vector3 position;
     }
 
     [System.Serializable]
@@ -43,15 +43,16 @@ public class LogData
     [System.Serializable]
     public class SaveDataWrapper
     {
-        public List<ArrowEntry> arrows = new List<ArrowEntry>();
+        //public List<ArrowEntry> arrows = new List<ArrowEntry>();
         //public List<BlockEntry> blocks = new List<BlockEntry>();
         //public List<ConnectionEntry> allConnections = new List<ConnectionEntry>();
 
         // Used by SaveToJsonTwo
-        //public List<LocationEntry> locations = new List<LocationEntry>();
+        public List<LocationEntry> locations = new List<LocationEntry>();
         //public List<OccupiedPositionEntry> occupiedPositions = new List<OccupiedPositionEntry>();
     }
-
+	
+	/*
     public static void SaveToJson(
         Dictionary<string, List<BlockData>> arrowDict
         //Dictionary<Vector3, List<int>> firstArrowBlock,
@@ -67,15 +68,14 @@ public class LogData
                 keyObject = kvp.Key
             };
 
-            /*foreach (BlockData go in kvp.Value)
+            foreach (BlockData go in kvp.Value)
             {
                 entry.valueObjects.Add(go.position);
-            }*/
+            }
 
             wrapper.arrows.Add(entry);
         }
 		
-		/*
         foreach (var kvp in firstArrowBlock)
         {
             wrapper.blocks.Add(new BlockEntry
@@ -98,7 +98,7 @@ public class LogData
             }
 
             wrapper.allConnections.Add(entry);
-        }*/
+        }
 
         string json = JsonUtility.ToJson(wrapper, true);
 
@@ -109,12 +109,11 @@ public class LogData
         string filePath = Path.Combine(documentsPath, "dataTwo.json");
 
         File.WriteAllText(filePath, json);
-    }
+    }*/
 	
-	/*
     public static void SaveToJsonTwo(
-        Dictionary<int, Dictionary<int, Vector3>> locations,
-        HashSet<Vector3> occupiedPositions)
+        Dictionary<int, Dictionary<int, Vector3>> locations)
+        //HashSet<Vector3> occupiedPositions)
     {
         SaveDataWrapper wrapper = new SaveDataWrapper();
 
@@ -126,17 +125,18 @@ public class LogData
             foreach (var innerEntry in outerEntry.Value)
             {
                 int y = innerEntry.Key;
-                Vector3 position = innerEntry.Value;
+                //Vector3 position = innerEntry.Value;
 
                 wrapper.locations.Add(new LocationEntry
                 {
                     x = x,
-                    y = y,
-                    position = position
+                    y = y
+                    //position = position
                 });
             }
         }
-
+		
+		/*
         // Save occupied positions
         foreach (Vector3 position in occupiedPositions)
         {
@@ -144,7 +144,7 @@ public class LogData
             {
                 position = position
             });
-        }
+        }*/
 
         // Convert everything to JSON
         string json = JsonUtility.ToJson(wrapper, true);
@@ -156,5 +156,5 @@ public class LogData
         string filePath = Path.Combine(documentsPath, "dataThree.json");
 
         File.WriteAllText(filePath, json);
-    }*/
+    }
 }

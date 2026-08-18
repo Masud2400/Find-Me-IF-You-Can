@@ -21,14 +21,16 @@ public class DataWrapper
 
 public class DebugInterface : MonoBehaviour
 {
-	private Dictionary<int, Dictionary<int, Vector3>> locations;
-	private string filePath;
-	private int arrowCounter = 0;
-	
+	[SerializeField] private Data gameData;
 	[SerializeField] private Button prefabToSpawn;        
     [SerializeField] private Transform spawnParent;
 	
+	private string filePath;
+	private int arrowCounter = 0;
+	
 	private Color pressedColor = Color.red;
+	
+	private Dictionary<Vector2Int, GridCell> locations;
 	
 	void Awake()
 	{
@@ -38,25 +40,29 @@ public class DebugInterface : MonoBehaviour
 	
 	void Start()
 	{
-		locations = GridManager.Instance.locations;
+		locations = gameData.locations;
 	}
 	
 	public void MakeInterface()
 	{
-		foreach (var key in locations)
+		foreach(var pair in locations)
 		{
-			foreach (var value in key.Value)
-			{
-				Vector3 spawnPosition = value.Value;
-				
-				Button spawnedObj = Instantiate(prefabToSpawn, spawnParent);
-				spawnedObj.transform.localPosition = spawnPosition;
-				
-				Image img = spawnedObj.GetComponent<Image>();
-				spawnedObj.onClick.AddListener(() => img.color = pressedColor);
-				
-				spawnedObj.onClick.AddListener(() => SaveArrowToJson(spawnPosition, key.Key, value.Key));
-			}
+			Vector2Int index = pair.Key;
+			GridCell cell = pair.Value;
+			
+			Vector3 spawnPosition = cell.position;
+			
+			Button spawnedObj = Instantiate(prefabToSpawn, spawnParent);
+			spawnedObj.transform.localPosition = spawnPosition;
+			
+			Image img = spawnedObj.GetComponent<Image>();
+			
+			float hue = ((cell.layer - 1) * 0.61803398875f) % 1.0f;
+			img.color = Color.HSVToRGB(hue, 0.5f, 1.0f);
+			
+			spawnedObj.onClick.AddListener(() => img.color = pressedColor);
+			
+			spawnedObj.onClick.AddListener(() => SaveArrowToJson(spawnPosition, index.x, index.y));
 		}
 	}
 	

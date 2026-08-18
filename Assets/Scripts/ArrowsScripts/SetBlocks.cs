@@ -4,26 +4,32 @@ using System.Collections.Generic;
 
 public class SetBlocks : MonoBehaviour
 {	
-	private Dictionary<int, Dictionary<int, Vector3>> locations;
+	private Data gameData;
+
+	private Dictionary<Vector2Int, GridCell> locations;
+	private Dictionary<string, List<VectorData>> arrowDict;
 	private HashSet<Vector3> occupiedPositions;
-	private Dictionary<string, List<BlockData>> arrowDict;
-	private Vector3 randomVector;
+	private Dictionary<Vector3, FirstBlock> firstArrowBlock;
 	
+	private Vector3 randomVector;
 	private int counter = 0;
 	
 	void Start()
 	{
-		locations = GridManager.Instance.locations;
-		occupiedPositions = GridManager.Instance.occupiedPositions;
-		arrowDict = GridManager.Instance.arrowDict;
+		gameData = AssetManager.Instance.GameData;
+		
+		locations = gameData.locations;
+		arrowDict = gameData.arrowDict;
+		occupiedPositions = gameData.occupiedPositions;
+		firstArrowBlock = gameData.firstArrowBlock;
 	}
 
     private void SetRandomLocation()
     {	
-		var allVectors = locations.Values.SelectMany(innerDict => innerDict.Values).ToList();
-		
-		var availableVectors = allVectors
-			.Where(v => !occupiedPositions.Contains(v))
+		var availableVectors = locations.Values
+			.Where(cell => !occupiedPositions.Contains(cell.position))
+			.OrderByDescending(cell => cell.layer)
+			.Select(cell => cell.position)
 			.ToList();
 
 		if (availableVectors.Count == 0)
@@ -43,16 +49,48 @@ public class SetBlocks : MonoBehaviour
 		
 		if (!arrowDict.ContainsKey(arrowName))
 		{
-			arrowDict[arrowName] = new List<BlockData>(); // Adding the key
+			arrowDict[arrowName] = new List<VectorData>();
 		}
+	}
+	
+	private void ChooseAngle(out int randomAngle) // This needs refinement
+	{
+		int[] angles = { 270, 180, 90, 0 };
+		randomAngle = Random.Range(0, 4);
+	}
+	
+	private void SaveFirstBlockData(Vector3 randomVector)
+	{
+		ChooseAngle(out int randomAngle);
+		
+		// FirstArrowData save
+		Vector2Int index = GetIndex.GetGridIndex(randomVector);
+		
+		if(!firstArrowBlock.ContainsKey(randomVector))
+		{
+			FirstBlock firstBlock = new FirstBlock
+			{
+				row = index.x,
+				col = index.y,
+				angle = randomAngle
+			};
+			
+			firstArrowBlock.Add(randomVector, firstBlock);
+		}
+		
+		
+		// Arrow Dictionary save
+		SpawnParent(out string arrowName);
+		
+		Quaternion rotation = Quaternion.Euler(0, 0, randomAngle);
+
+		arrowDict[arrowName].Add(new VectorData { position = randomVector, rotation = rotation });
 	}
 	
 	public void SpawnBlock()
 	{
 		SetRandomLocation();
 		
-		SpawnParent(out string arrowName);
-		
-		arrowDict[arrowName].Add(new BlockData { position = randomVector }); // Adding first block to the arrowDict
+		SaveFirstBlockData(randomVector);
 	}
 }

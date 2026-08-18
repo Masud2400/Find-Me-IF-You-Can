@@ -38,7 +38,7 @@ public class ExitChecker : MonoBehaviour
 	}
 	
 	private void GetTargetPos(Vector3 firstBlock, out HashSet<Vector3> targetPositions)
-	{
+	{	
 		targetPositions = new HashSet<Vector3>();
 		
 		GetFirstBlockData(firstBlock, out int row, out int col, out int angle);
@@ -178,9 +178,9 @@ public class ExitChecker : MonoBehaviour
 		return false;
 	}
 	
-	public bool CheckExit()
+	public bool CheckExit(out string currentArrow)
 	{
-		string currentArrow = arrowDict.Last().Key;
+		currentArrow = arrowDict.Last().Key;
 		
 		SaveAllConnections();
 		

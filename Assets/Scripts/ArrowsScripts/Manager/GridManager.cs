@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 [System.Serializable]
 public class BlockData
@@ -14,14 +15,9 @@ public class GridManager : MonoBehaviour
 	[Header("Main scripts")]
     [SerializeField] private GridGen gridGen;
 	[SerializeField] private SetBlocks setBlocks;
-	[SerializeField] private SetArrows setArrows;
+	//[SerializeField] private SetArrows setArrows;
 	[SerializeField] private ExitChecker exitChecker;
 	[SerializeField] private BlockManager blockManager;
-	
-	[Header("Debugging Scripts")]
-	//For simulating the arrows and debugging
-	[SerializeField] private DebugArrowMaker debugArrowMaker;
-	[SerializeField] private DebugInterface debugInterface;
 	
 	public static GridManager Instance;
 	
@@ -31,9 +27,10 @@ public class GridManager : MonoBehaviour
 	public Dictionary<string, List<BlockData>> arrowDict = new Dictionary<string, List<BlockData>>();
 	public Dictionary<Transform, List<GameObject>> gameObjectReference = new Dictionary<Transform, List<GameObject>>();
 	
+	/*
 	//Infinite loop guard
 	private int currentIteration = 0;
-	private int maxIteration = 1000;
+	private int maxIteration = 10000;*/
 	
 	void Awake()
 	{
@@ -46,39 +43,44 @@ public class GridManager : MonoBehaviour
 	}
 	
 	public void makeArrows()
-	{
-		var allVectors = locations.Values.SelectMany(innerDict => innerDict.Values).ToList();
+	{	
+		/*
+		int availableVectors = 0;
 		
-		HashSet<Vector3> seenVectors = new HashSet<Vector3>();
-	
-		while(seenVectors.Count < allVectors.Count)
-		{	
-			//Infinite Loop Guard
-			if(++currentIteration > maxIteration)
+		int previous = 0;
+		int current = 0;
+
+		while (true)
+		{
+			setBlocks.SpawnBlock();
+			setArrows.setArrowLength();
+			
+			availableVectors = locations.Values
+				.SelectMany(innerDict => innerDict.Values)
+				.Count(v => !occupiedPositions.Contains(v));
+				
+			if(availableVectors <= 0)
+				break;
+			
+			if (++currentIteration > maxIteration)
 			{
 				Debug.Log("Infinite loop detected");
 				break;
 			}
-			
-			setBlocks.SpawnBlock();
-			setArrows.setArrowLength();
-			
-			foreach(var kvp in arrowDict)
-			{
-				foreach(BlockData i in kvp.Value)
-				{
-					seenVectors.Add(i.position);
-				}
-			}
-			
-			exitChecker.CheckExit();
+
+			bool way = exitChecker.CheckExit(out string currentArrow);
+
+			int value = int.Parse(Regex.Match(currentArrow, @"\d+").Value);
+
+			if (!way)
+				previous = value;
+
+			current = value;
+
+			if (current - previous >= availableVectors)
+				break;
 		}
-		
-		if(seenVectors.Count == allVectors.Count)
-		{
-			Debug.Log("No more ways left");
-		}
-		
-		//LogData.SaveToJson(arrowDict);
+
+		Debug.Log($"Available Vectors: {availableVectors}; Wrong tries: {current - previous}");*/
 	}
 }
