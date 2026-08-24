@@ -31,7 +31,8 @@ public class LogData
     {
         public int x;
         public int y;
-        //public Vector3 position;
+        public Vector3 position;
+		public int layer;
     }
 
     [System.Serializable]
@@ -112,28 +113,25 @@ public class LogData
     }*/
 	
     public static void SaveToJsonTwo(
-        Dictionary<int, Dictionary<int, Vector3>> locations)
+        Dictionary<Vector2Int, GridCell> locations)
         //HashSet<Vector3> occupiedPositions)
     {
         SaveDataWrapper wrapper = new SaveDataWrapper();
 
         // Save locations
-        foreach (var outerEntry in locations)
+        foreach (var kvp in locations)
         {
-            int x = outerEntry.Key;
+            Vector2Int index = kvp.Key;
 
-            foreach (var innerEntry in outerEntry.Value)
-            {
-                int y = innerEntry.Key;
-                //Vector3 position = innerEntry.Value;
+            GridCell cell = kvp.Value;
 
-                wrapper.locations.Add(new LocationEntry
-                {
-                    x = x,
-                    y = y
-                    //position = position
-                });
-            }
+			wrapper.locations.Add(new LocationEntry
+			{
+				x = index.x,
+				y = index.y,
+				position = cell.position,
+				layer = cell.layer
+			});
         }
 		
 		/*

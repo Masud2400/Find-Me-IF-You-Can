@@ -31,4 +31,6 @@ public class Data : ScriptableObject
 	public Dictionary<string, List<VectorData>> arrowDict = new Dictionary<string, List<VectorData>>();
 	public Dictionary<Vector3, FirstBlock> firstArrowBlock = new Dictionary<Vector3, FirstBlock>();
 	public Dictionary<Transform, List<GameObject>> gameObjectReference = new Dictionary<Transform, List<GameObject>>();
+	
+	public int currentLayer;
 }

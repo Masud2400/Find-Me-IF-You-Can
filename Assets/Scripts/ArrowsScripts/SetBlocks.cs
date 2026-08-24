@@ -11,8 +11,13 @@ public class SetBlocks : MonoBehaviour
 	private HashSet<Vector3> occupiedPositions;
 	private Dictionary<Vector3, FirstBlock> firstArrowBlock;
 	
+	private List<Vector3> availableVectors;
+	private List<Vector3> chosenVectors = new List<Vector3>();
+	
 	private Vector3 randomVector;
 	private int counter = 0;
+	private int currentLayer;
+	private bool layerInitialized = false;
 	
 	void Start()
 	{
@@ -23,22 +28,42 @@ public class SetBlocks : MonoBehaviour
 		occupiedPositions = gameData.occupiedPositions;
 		firstArrowBlock = gameData.firstArrowBlock;
 	}
+	
+	private void GetCurrentLayer()
+	{
+		if(!layerInitialized)
+		{
+			currentLayer = locations.Values.Max(c => c.layer);
+			layerInitialized = true;
+		}
+		
+		bool isLayerFull = locations.Values
+			.Where(c => c.layer == currentLayer)
+			.All(c => occupiedPositions.Contains(c.position));
 
-    private void SetRandomLocation()
-    {	
-		var availableVectors = locations.Values
-			.Where(cell => !occupiedPositions.Contains(cell.position))
-			.OrderByDescending(cell => cell.layer)
-			.Select(cell => cell.position)
+		if (isLayerFull)
+		{
+			currentLayer--;
+		}
+	}
+	
+	private void GetAvailableVectors()
+	{
+		availableVectors = locations.Values
+			.Where(c => c.layer == currentLayer && !occupiedPositions.Contains(c.position))
+			.Select(c => c.position)
 			.ToList();
-
+		
 		if (availableVectors.Count == 0)
 		{
 			return; 
 		}
+	}
 
-		randomVector = availableVectors[Random.Range(0, availableVectors.Count)];
-		occupiedPositions.Add(randomVector);
+    private void SetRandomLocation()
+    {	
+		int index = Random.Range(0, availableVectors.Count);
+		randomVector = availableVectors[index];
     }
 	
 	private void SpawnParent(out string arrowName)
@@ -53,18 +78,19 @@ public class SetBlocks : MonoBehaviour
 		}
 	}
 	
-	private void ChooseAngle(out int randomAngle) // This needs refinement
+	private int ChooseAngle() // This needs refinement
 	{
 		int[] angles = { 270, 180, 90, 0 };
-		randomAngle = Random.Range(0, 4);
+		return angles[Random.Range(0, angles.Length)];
 	}
 	
-	private void SaveFirstBlockData(Vector3 randomVector)
+	private void SaveFirstBlockData()
 	{
-		ChooseAngle(out int randomAngle);
+		int randomAngle = ChooseAngle(); 
 		
 		// FirstArrowData save
-		Vector2Int index = GetIndex.GetGridIndex(randomVector);
+		var match = locations.FirstOrDefault(pair => pair.Value.position == randomVector);
+		Vector2Int index = match.Key;
 		
 		if(!firstArrowBlock.ContainsKey(randomVector))
 		{
@@ -78,19 +104,27 @@ public class SetBlocks : MonoBehaviour
 			firstArrowBlock.Add(randomVector, firstBlock);
 		}
 		
-		
 		// Arrow Dictionary save
 		SpawnParent(out string arrowName);
 		
 		Quaternion rotation = Quaternion.Euler(0, 0, randomAngle);
 
 		arrowDict[arrowName].Add(new VectorData { position = randomVector, rotation = rotation });
+		
+		// Save occupiedPositions
+		occupiedPositions.Add(randomVector);
 	}
 	
 	public void SpawnBlock()
 	{
+		GetCurrentLayer();
+		
+		GetAvailableVectors();
+		
 		SetRandomLocation();
 		
-		SaveFirstBlockData(randomVector);
+		SaveFirstBlockData();
+		
+		gameData.currentLayer = currentLayer;
 	}
 }

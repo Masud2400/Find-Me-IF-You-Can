@@ -32,7 +32,7 @@ public class DebugArrowMaker : MonoBehaviour
 	[SerializeField] private Data gameData;
 	
     private Dictionary<string, List<VectorData>> arrowDict;
-	private Dictionary<Vector3, List<int>> firstArrowBlock;
+	private Dictionary<Vector3, FirstBlock> firstArrowBlock;
 	private HashSet<Vector3> occupiedPositions;
 	
 	private string filePath;
@@ -86,11 +86,11 @@ public class DebugArrowMaker : MonoBehaviour
 			
 			if (processedArrows.Add(entry.name))
 			{
-				firstArrowBlock[point] = new List<int>
+				firstArrowBlock[point] = new FirstBlock
 				{
-					entry.row,
-					entry.col,
-					entry.angle
+					row = entry.row,
+					col = entry.col,
+					angle = entry.angle
 				};
 			}
 		}

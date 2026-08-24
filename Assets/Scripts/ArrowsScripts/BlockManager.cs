@@ -4,21 +4,25 @@ using UnityEngine.UI;
 
 public class BlockManager : MonoBehaviour
 {
-    public Dictionary<string, List<BlockData>> arrowDict;
+    public Dictionary<string, List<VectorData>> arrowDict;
 	public Dictionary<Transform, List<GameObject>> gameObjectReference;
 	
-	[Header("Game Objects")]
-	[SerializeField] private GameObject prefabToSpawn;        
-    [SerializeField] private Transform spawnParent; // Parent of arrowParent
-	[SerializeField] private Transform arrowParent; // Parent prefab
-	
-	[Header("Sprite")]
-	[SerializeField] private Sprite arrowHead;
+	private GameObject prefabToSpawn;        
+    private Transform spawnParent; // Parent of arrowParent
+	private Transform arrowParent; // Parent prefab
+	private Sprite arrowHead;
+	private Data gameData;
 	
 	void Start()
 	{
-		arrowDict = GridManager.Instance.arrowDict;
-		gameObjectReference = GridManager.Instance.gameObjectReference;
+		prefabToSpawn = AssetManager.Instance.PrefabToSpawn;
+		spawnParent = AssetManager.Instance.SpawnParent;
+		arrowParent = AssetManager.Instance.ArrowParent;
+		arrowHead = AssetManager.Instance.ArrowHead;
+		gameData = AssetManager.Instance.GameData;
+		
+		arrowDict = gameData.arrowDict;
+		gameObjectReference = gameData.gameObjectReference;
 	}
 	
 	public void GetBlocks()
@@ -33,13 +37,11 @@ public class BlockManager : MonoBehaviour
 				gameObjectReference[spawnedParent] = new List<GameObject>();
 			}
 			
-			BlockData obj = kvp.Value[0];
+			VectorData obj = kvp.Value[0];
 			
-			GameObject spawnedObj = Instantiate(
-				prefabToSpawn, 
-				obj.position, 
-				obj.rotation, 
-				spawnedParent);
+			GameObject spawnedObj = Instantiate(prefabToSpawn, spawnedParent);
+			spawnedObj.transform.localPosition = obj.position;
+			spawnedObj.transform.localRotation = obj.rotation;
 			
 			gameObjectReference[spawnedParent].Add(spawnedObj);
 			
@@ -64,17 +66,15 @@ public class BlockManager : MonoBehaviour
 		}
 	}
 	
-	private void CreateOtherBlocks(KeyValuePair<string, List<BlockData>> kvp, Transform spawnedParent)
+	private void CreateOtherBlocks(KeyValuePair<string, List<VectorData>> kvp, Transform spawnedParent)
 	{
 		for (int i = 1; i < kvp.Value.Count; i++)
 		{
-			BlockData obj = kvp.Value[i];
+			VectorData obj = kvp.Value[i];
 
-			GameObject spawnedObj = Instantiate(
-				prefabToSpawn, 
-				obj.position, 
-				obj.rotation, 
-				spawnedParent);
+			GameObject spawnedObj = Instantiate(prefabToSpawn, spawnedParent);
+			spawnedObj.transform.localPosition = obj.position;
+			spawnedObj.transform.localRotation = obj.rotation;
 			
 			gameObjectReference[spawnedParent].Add(spawnedObj);
 		}

@@ -25,7 +25,7 @@ public class GridGen : MonoBehaviour
 		float startX = (-width / 2f) + (GRID_SIZE / 2f);
 		float startY = (height / 2f) - (GRID_SIZE / 2f);
 		
-		int gap = 3;
+		int gap = 1;
 		
 		for(int i = 0; i < heightCount; i++)
 		{	

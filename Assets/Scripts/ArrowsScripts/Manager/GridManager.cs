@@ -15,7 +15,7 @@ public class GridManager : MonoBehaviour
 	[Header("Main scripts")]
     [SerializeField] private GridGen gridGen;
 	[SerializeField] private SetBlocks setBlocks;
-	//[SerializeField] private SetArrows setArrows;
+	[SerializeField] private SetArrows setArrows;
 	[SerializeField] private ExitChecker exitChecker;
 	[SerializeField] private BlockManager blockManager;
 	
@@ -44,43 +44,13 @@ public class GridManager : MonoBehaviour
 	
 	public void makeArrows()
 	{	
-		/*
-		int availableVectors = 0;
-		
-		int previous = 0;
-		int current = 0;
-
-		while (true)
+		for(int i = 0; i < 40; i++)
 		{
 			setBlocks.SpawnBlock();
-			setArrows.setArrowLength();
-			
-			availableVectors = locations.Values
-				.SelectMany(innerDict => innerDict.Values)
-				.Count(v => !occupiedPositions.Contains(v));
-				
-			if(availableVectors <= 0)
-				break;
-			
-			if (++currentIteration > maxIteration)
-			{
-				Debug.Log("Infinite loop detected");
-				break;
-			}
-
-			bool way = exitChecker.CheckExit(out string currentArrow);
-
-			int value = int.Parse(Regex.Match(currentArrow, @"\d+").Value);
-
-			if (!way)
-				previous = value;
-
-			current = value;
-
-			if (current - previous >= availableVectors)
-				break;
+		
+			setArrows.LayArrows();
 		}
-
-		Debug.Log($"Available Vectors: {availableVectors}; Wrong tries: {current - previous}");*/
+		
+		blockManager.GetBlocks();
 	}
 }
