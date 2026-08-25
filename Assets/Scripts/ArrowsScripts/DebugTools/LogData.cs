@@ -46,22 +46,22 @@ public class LogData
     {
         //public List<ArrowEntry> arrows = new List<ArrowEntry>();
         //public List<BlockEntry> blocks = new List<BlockEntry>();
-        //public List<ConnectionEntry> allConnections = new List<ConnectionEntry>();
+        public List<ConnectionEntry> allConnections = new List<ConnectionEntry>();
 
         // Used by SaveToJsonTwo
-        public List<LocationEntry> locations = new List<LocationEntry>();
+        //public List<LocationEntry> locations = new List<LocationEntry>();
         //public List<OccupiedPositionEntry> occupiedPositions = new List<OccupiedPositionEntry>();
     }
 	
-	/*
     public static void SaveToJson(
-        Dictionary<string, List<BlockData>> arrowDict
+        //Dictionary<string, List<BlockData>> arrowDict
         //Dictionary<Vector3, List<int>> firstArrowBlock,
-        //Dictionary<string, HashSet<string>> arrowConnections
+        Dictionary<string, HashSet<string>> arrowConnections
 		)
     {
         SaveDataWrapper wrapper = new SaveDataWrapper();
-
+		
+		/*
         foreach (var kvp in arrowDict)
         {
             ArrowEntry entry = new ArrowEntry
@@ -84,7 +84,7 @@ public class LogData
                 keyVector = kvp.Key,
                 values = kvp.Value
             });
-        }
+        }*/
 
         foreach (var kvp in arrowConnections)
         {
@@ -110,8 +110,9 @@ public class LogData
         string filePath = Path.Combine(documentsPath, "dataTwo.json");
 
         File.WriteAllText(filePath, json);
-    }*/
+    }
 	
+	/*
     public static void SaveToJsonTwo(
         Dictionary<Vector2Int, GridCell> locations)
         //HashSet<Vector3> occupiedPositions)
@@ -142,7 +143,7 @@ public class LogData
             {
                 position = position
             });
-        }*/
+        }
 
         // Convert everything to JSON
         string json = JsonUtility.ToJson(wrapper, true);
@@ -154,5 +155,5 @@ public class LogData
         string filePath = Path.Combine(documentsPath, "dataThree.json");
 
         File.WriteAllText(filePath, json);
-    }
+    }*/
 }

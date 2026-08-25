@@ -4,9 +4,12 @@ using System.Linq;
 
 public class MoveArrow : MonoBehaviour
 {
-	private Dictionary<int, Dictionary<int, Vector3>> locations;
-    private HashSet<Vector3> occupiedPositions;
-	private Dictionary<Vector3, List<int>> firstArrowBlock;
+	private Data gameData;
+
+	private Dictionary<Vector2Int, GridCell> locations;
+	private HashSet<Vector3> occupiedPositions;
+	private Dictionary<string, List<VectorData>> arrowDict;
+	private Dictionary<Vector3, FirstBlock> firstArrowBlock;
 	public Dictionary<Transform, List<GameObject>> gameObjectReference;
 	
 	[Header("Settings")]
@@ -18,148 +21,141 @@ public class MoveArrow : MonoBehaviour
 
     void Start()
     {
-        locations = GridManager.Instance.locations;
-        occupiedPositions = GridManager.Instance.occupiedPositions;
-		firstArrowBlock = GridManager.Instance.firstArrowBlock;
-		gameObjectReference = GridManager.Instance.gameObjectReference;
+        gameData = AssetManager.Instance.GameData;
+		
+		locations = gameData.locations;
+		arrowDict = gameData.arrowDict;
+		occupiedPositions = gameData.occupiedPositions;
+		firstArrowBlock = gameData.firstArrowBlock;
+		gameObjectReference = gameData.gameObjectReference;
     }
 	
+	/*
 	void Update()
-	{
+	{	
 		if(isMoving)
-		{
+		{	
 			float step = movementSpeed * Time.deltaTime;
 
 			if(targetPos == Vector3.zero) return; //Possible bug
 			
-			List<GameObject> arrowList = FindListByLocalPosition(transform.localPosition);
+			transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPos, step);
 			
-			SetBlockMovement(arrowList, step);
-		}
-	}
-	
-	private void SetBlockMovement(List<GameObject> arrowList, float step)
-	{	
-		GameObject head = arrowList[0];
-		GameObject lastBlock = arrowList[arrowList.Count - 1];
-		
-		// This removes the positions to clear the way
-		occupiedPositions.Remove(head.transform.localPosition);
-		
-		Vector3 previousPosition = head.transform.localPosition;
-		Quaternion previousRotation = head.transform.localRotation;
-		
-		head.transform.localPosition = Vector3.MoveTowards(head.transform.localPosition, targetPos, step);
-
-		for (int i = 1; i < arrowList.Count; i++)
-		{
-			GameObject currentBlock = arrowList[i];
-			
-			// This removes the positions to clear the way
-			occupiedPositions.Remove(arrowList[i].transform.localPosition);
-			
-			Vector3 nextPreviousPos = currentBlock.transform.localPosition;
-			Quaternion nextPreviousRotation = currentBlock.transform.localRotation;
-			
-			currentBlock.transform.localPosition = Vector3.MoveTowards(currentBlock.transform.localPosition, previousPosition, step);
-			currentBlock.transform.localRotation = previousRotation;
-			
-			previousPosition = nextPreviousPos;
-			previousRotation = nextPreviousRotation;
-		}
-		
-		if (Vector3.Distance(lastBlock.transform.localPosition, targetPos) < 0.001f)
-		{
-			lastBlock.transform.localPosition = targetPos;
-			isMoving = false;
-		}
-	}
-	
-	private List<GameObject> FindListByLocalPosition(Vector3 targetLocalPosition)
-	{
-		foreach (List<GameObject> arrowList in gameObjectReference.Values)
-		{
-			foreach (GameObject arrow in arrowList)
+			if (Vector3.Distance(transform.localPosition, targetPos) < 0.001f)
 			{
-				if (arrow != null && arrow.transform.localPosition == targetLocalPosition)
-				{
-					return arrowList; 
-				}
+				transform.localPosition = targetPos;
+				isMoving = false;
 			}
 		}
+	}*/
+	
+	//Debugging
+	private void DestroyObjects()
+	{
+		var entry = gameObjectReference
+			.FirstOrDefault(x => x.Value.Any(obj =>
+				obj != null &&
+				obj.transform.localPosition == transform.localPosition));
 
-		return null;
+		if (entry.Key == null)
+			return;
+
+		foreach (var obj in entry.Value)
+		{
+			if (obj != null)
+				Destroy(obj);
+		}
+
+		gameObjectReference.Remove(entry.Key);
+		
+		string foundKey = arrowDict
+			.FirstOrDefault(x => x.Value.Any(v => v.position == transform.localPosition))
+			.Key;
+		
+		foreach(var loc in arrowDict[foundKey])
+		{
+			occupiedPositions.Remove(loc.position);
+		}
 	}
 	
 	public void MoveBlocks()
 	{	
 		//Debugging
-		Debug.Log("Arrow clicked");
-	
-		if(isMoving) return;
-		isMoving = true;
+		//Debug.Log("Arrow clicked");
+		
+		//if(isMoving) return;
+		//isMoving = true;
+		
+		Vector3 previousPos = targetPos;
 		
 		Vector3 currentPos = transform.localPosition;
 		
-		if (!firstArrowBlock.TryGetValue(currentPos, out List<int> values) || values.Count < 3)
+		if (!firstArrowBlock.TryGetValue(currentPos, out FirstBlock values))
 			return;
 
-		int row = values[0];
-		int col = values[1];
-		int angle = values[2];
+		int row = values.row;
+		int col = values.col;
+		int angle = values.angle;
 		
-		int finalRow = locations.Count - 1;
-		int finalCol = locations.Last().Value.Last().Key; 
+		int finalRow = locations.Last().Key.x;
+		int finalCol = locations.Last().Key.y;
+
+		Vector2Int index;
+		Vector3 position = Vector3.zero;
 
 		switch (angle)
 		{
 			case 270: // Up
 				for (int i = row - 1; i >= 0; i--)
 				{
-					if (occupiedPositions.Contains(locations[i][col]))
-					{
-						Debug.Log($"Blocked by {locations[i][col]}");
+					index = new Vector2Int(i, col);
+					position = locations[index].position;
+					if (occupiedPositions.Contains(position))
 						return;
-					}
 				}
-				targetPos = locations[0][col] + new Vector3(0, offscreenOffset, 0);
+				targetPos = position + new Vector3(0, offscreenOffset, 0);
 				break;
 
 			case 90: // Down
 				for (int i = row + 1; i <= finalRow; i++)
 				{
-					if (occupiedPositions.Contains(locations[i][col]))
-					{
-						Debug.Log($"Blocked by {locations[i][col]}");
+					index = new Vector2Int(i, col);
+					position = locations[index].position;
+					if (occupiedPositions.Contains(position))
 						return;
-					}
 				}
-				targetPos = locations[finalRow][col] + new Vector3(0, -offscreenOffset, 0);
+				targetPos = position + new Vector3(0, -offscreenOffset, 0);
 				break;
 
 			case 0: // Left
 				for (int i = col - 1; i >= 0; i--)
 				{
-					if (occupiedPositions.Contains(locations[row][i]))
-					{
-						Debug.Log($"Blocked by {locations[row][i]}");
+					index = new Vector2Int(row, i);
+					position = locations[index].position;
+					if (occupiedPositions.Contains(position))
 						return;
-					}
 				}
-				targetPos = locations[row][0] + new Vector3(-offscreenOffset, 0, 0);
+				targetPos = position + new Vector3(-offscreenOffset, 0, 0);
 				break;
 
 			case 180: // Right
 				for (int i = col + 1; i <= finalCol; i++)
 				{
-					if (occupiedPositions.Contains(locations[row][i]))
-					{
-						Debug.Log($"Blocked by {locations[row][i]}");
+					index = new Vector2Int(row, i);
+					position = locations[index].position;
+					if (occupiedPositions.Contains(position))
 						return;
-					}
 				}
-				targetPos = locations[row][finalCol] + new Vector3(offscreenOffset, 0, 0);
+				targetPos = position + new Vector3(offscreenOffset, 0, 0);
 				break;
 		}
+		
+		if(previousPos == targetPos)
+		{
+			Debug.Log("No Change");
+			return;
+		}
+		
+		DestroyObjects();
 	}
 }

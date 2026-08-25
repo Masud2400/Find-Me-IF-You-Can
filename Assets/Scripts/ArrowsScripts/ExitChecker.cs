@@ -48,40 +48,51 @@ public class ExitChecker : MonoBehaviour
 		
 		GetFirstBlockData(firstBlock, out int row, out int col, out int angle);
 		
-		int finalRow = locations.Count - 1;
-		int finalCol = locations.Last().Value.Last().Key;
+		int finalRow = locations.Last().Key.x;
+		int finalCol = locations.Last().Key.y;
+		
+		Vector2Int index;
+		Vector3 position;
 		
 		switch (angle)
 		{
 			case 270: // Up
 				for (int i = row - 1; i >= 0; i--)
 				{
-					if (occupiedPositions.Contains(locations[i][col]))
-						targetPositions.Add(locations[i][col]);
+					index = new Vector2Int(i, col);
+					position = locations[index].position;
+					if (occupiedPositions.Contains(position))
+						targetPositions.Add(position);
 				}
 				break;
 
 			case 90: // Down
 				for (int i = row + 1; i <= finalRow; i++)
 				{
-					if (occupiedPositions.Contains(locations[i][col]))
-						targetPositions.Add(locations[i][col]);
+					index = new Vector2Int(i, col);
+					position = locations[index].position;
+					if (occupiedPositions.Contains(position))
+						targetPositions.Add(position);
 				}
 				break;
 
 			case 0: // Left
 				for (int i = col - 1; i >= 0; i--)
 				{
-					if (occupiedPositions.Contains(locations[row][i]))
-						targetPositions.Add(locations[row][i]);
+					index = new Vector2Int(row, i);
+					position = locations[index].position;
+					if (occupiedPositions.Contains(position))
+						targetPositions.Add(position);
 				}
 				break;
 
 			case 180: // Right
 				for (int i = col + 1; i <= finalCol; i++)
 				{
-					if (occupiedPositions.Contains(locations[row][i]))
-						targetPositions.Add(locations[row][i]);
+					index = new Vector2Int(row, i);
+					position = locations[index].position;
+					if (occupiedPositions.Contains(position))
+						targetPositions.Add(position);
 				}
 				break;
 		}
@@ -130,7 +141,7 @@ public class ExitChecker : MonoBehaviour
 		}
 	}
 	
-	private string DetectCycleBFS(string startNode)
+	private bool DetectCycleBFS(string startNode)
 	{	
 		Queue<string> toVisit = new Queue<string>();
 		HashSet<string> visited = new HashSet<string>();
@@ -149,7 +160,7 @@ public class ExitChecker : MonoBehaviour
 					// Found a connection pointing back to start
 					if (neighbor == startNode)
 					{
-						return startNode;
+						return true;
 					}
 
 					if (!visited.Contains(neighbor))
@@ -161,21 +172,39 @@ public class ExitChecker : MonoBehaviour
 			}
 		}
 
-		return null;
+		return false;
 	}
 	
-	public bool CheckExit()
+	public void CheckExit()
 	{
-		currentArrow = arrowDict.Last().Key;
+		int[] angles = { 270, 90, 0, 180 };
+		string currentArrow = arrowDict.Last().Key;
 		
 		SaveAllConnections();
 		
-		string detectCycle = DetectCycleBFS(currentArrow);
+		bool detectCycle = DetectCycleBFS(currentArrow);
 		
-		if(detectCycle == currentArrow)
-			return true;
+		if (!detectCycle)
+			return;
+
+		VectorData vectorData = GetFirstBlock(currentArrow);
 		
-		if(detectCycle == null)
-			return false;
+		foreach (int angle in angles)
+		{
+			if(arrowConnections.ContainsKey(currentArrow))
+				arrowConnections[currentArrow].Clear();
+			
+			vectorData.rotation = Quaternion.Euler(0, 0, angle);
+			
+			if (firstArrowBlock.TryGetValue(vectorData.position, out FirstBlock block))
+				block.angle = angle;
+
+			SaveAllConnections();
+
+			detectCycle = DetectCycleBFS(currentArrow);
+
+			if (!detectCycle)
+				return;
+		}
 	}
 }

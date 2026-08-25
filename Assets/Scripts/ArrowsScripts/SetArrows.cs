@@ -13,9 +13,7 @@ public class SetArrows : MonoBehaviour
 	private HashSet<Vector3> occupiedPositions;
 	private Dictionary<Vector3, FirstBlock> firstArrowBlock;
 	
-	private int[] angles = { 270, 90, 0, 180 };
 	private List<Vector2Int> indices = new List<Vector2Int>();
-	private int currentIndex = 0;
 	private Vector2Int lastIndex;
 	
 	void Start()
@@ -48,6 +46,11 @@ public class SetArrows : MonoBehaviour
 		return Random.Range(10, 20);
 	}
 	
+	private int GetOppositeAngle(int angle)
+	{
+		return (angle + 180) % 360;
+	}
+	
 	private bool CheckIsOccupied(Vector2Int index)
 	{	
 		int layer = locations[index].layer;
@@ -62,18 +65,11 @@ public class SetArrows : MonoBehaviour
 		return false;
 	}
 	
-	private void GetCurrentIndex(int angle)
+	private int[] TryGetNextDirection(int value)
 	{
-		currentIndex = Array.IndexOf(angles, angle);
-	}
-	
-	private int TryGetNextDirection()
-	{
-		int directionIndex = (currentIndex + 1) % angles.Length;
+		int[] angles = { 270, 90, 0, 180 };
 		
-		currentIndex = directionIndex;
-		
-		return angles[directionIndex];
+		return angles.Where(angle => angle != value).ToArray();
 	}
 	
 	private void GetBlocks(Vector2Int block, int angle)
@@ -146,11 +142,16 @@ public class SetArrows : MonoBehaviour
 		
 		AddToArrowDict(block, angle);
 		
-		GetCurrentIndex(angle);
-		
-		for(int i = 0; i < 4; i++)
+		if(lastIndex == block)
 		{
-			angle = TryGetNextDirection();
+			angle = GetOppositeAngle(angle); // Prevents lonely first block from changing its angle
+		}
+		
+		int[] result = TryGetNextDirection(angle);
+		
+		for(int i = 0; i < result.Length; i++)
+		{	
+			angle = result[i];
 			AddToArrowDict(lastIndex, angle);
 		}
 	}

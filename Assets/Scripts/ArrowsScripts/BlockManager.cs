@@ -13,6 +13,8 @@ public class BlockManager : MonoBehaviour
 	private Sprite arrowHead;
 	private Data gameData;
 	
+	private int counter = 0;
+	
 	void Start()
 	{
 		prefabToSpawn = AssetManager.Instance.PrefabToSpawn;
@@ -42,6 +44,8 @@ public class BlockManager : MonoBehaviour
 			GameObject spawnedObj = Instantiate(prefabToSpawn, spawnedParent);
 			spawnedObj.transform.localPosition = obj.position;
 			spawnedObj.transform.localRotation = obj.rotation;
+			spawnedObj.name = counter.ToString();
+			counter++;
 			
 			gameObjectReference[spawnedParent].Add(spawnedObj);
 			

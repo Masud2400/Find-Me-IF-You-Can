@@ -44,11 +44,13 @@ public class GridManager : MonoBehaviour
 	
 	public void makeArrows()
 	{	
-		for(int i = 0; i < 40; i++)
+		for(int i = 0; i < 100; i++)
 		{
 			setBlocks.SpawnBlock();
 		
 			setArrows.LayArrows();
+			
+			exitChecker.CheckExit();
 		}
 		
 		blockManager.GetBlocks();
